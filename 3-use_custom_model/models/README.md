@@ -1,0 +1,1 @@
+Contient les modèles de réseaux de neurones utilisés.
