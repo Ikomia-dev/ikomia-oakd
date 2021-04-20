@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 
-# Draw ROI and class label of each detected thing if confidence>60%
+# Draw ROI and class label of each detected thing if confidence>50%
 def frame_process(frame, tensor):
     frame_width, frame_height, _ = frame.shape
     keeped_roi = []

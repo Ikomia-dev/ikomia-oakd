@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 
-# Draw ROI and class label of each detected thing if confidence>60%
+# Draw ROI and class label of each detected thing
 def frame_process(frame, detection):
     frame_width, frame_height = frame.shape[:2]
     topleft = (int(detection.xmin*frame_width), int(detection.ymin*frame_height))
@@ -31,7 +31,7 @@ cam_rgb.setFps(20)
 
 # Configure neural network settings
 nn = pipeline.createMobileNetDetectionNetwork()
-nn.setConfidenceThreshold(0.5)
+nn.setConfidenceThreshold(0.5) # keep detections if confidence>50%
 nn.setBlobPath(nn_path)
 nn.setNumInferenceThreads(2)
 cam_rgb.preview.link(nn.input) # link cam_rgb to nn input layer
