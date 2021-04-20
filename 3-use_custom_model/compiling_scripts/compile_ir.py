@@ -46,7 +46,7 @@ else:
         'weights': bin_file
     }
     params = {
-        'version': '2020.1'
+        'version': '2021.1'
     }
 
     # Download the blob file and write it

@@ -2,7 +2,7 @@
 
 Il est necessaire d'utiliser [OpenVino](https://docs.openvinotoolkit.org/latest/index.html) pour compiler un modèle de sorte à ce qu'il soit compatible avec le OAK-D, pour l'installation, les tutoriels [Windows](https://docs.openvinotoolkit.org/latest/openvino_docs_get_started_get_started_windows.html) et [Linux](https://docs.openvinotoolkit.org/latest/openvino_docs_get_started_get_started_linux.html) sont très clairs.
 
-Néanmoins, pour utiliser la profondeur, il est necessaire de compiler avec la version [2020.1](https://docs.openvinotoolkit.org/2020.1/index.html) d'OpenVino, sinon, le modèle ne sera pas compréhensible pour l'appareil. Je vais donc utiliser cette version, afin de pouvoir utiliser le OAK-D à son plein potentiel.
+Néanmoins, pour la compatibilité avec le OAK-D, il faut utiliser une version d'OpenVino entre [2020.1](https://docs.openvinotoolkit.org/2020.1/index.html) et [2021.2](https://docs.openvinotoolkit.org/2021.2/index.html). En l'occurence, je vais utiliser la version [2021.1](https://docs.openvinotoolkit.org/2021.2/index.html) car elle permet de contourner les contraintes d'hardware (processeur intel), j'y reviendrai plus tard.
 <br><br>
 
 
