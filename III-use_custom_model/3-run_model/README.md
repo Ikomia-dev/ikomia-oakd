@@ -2,9 +2,10 @@
 
 Pour utiliser un modèle de notre choix, il faut se servir des objets proposés par la [bibliothèque](https://docs.luxonis.com/projects/api/en/latest/references/python/) DepthAI, je vais expliquer pourquoi et comment se servir d'eux.
 
-Pour se faire, j'ai créé plusieurs programmes, ils font tous la même chose, détecter les visages et indiquer si un masque est porté ([modèle](https://github.com/luxonis/depthai-experiments/tree/master/gen2-coronamask)).
-
-Ainsi, j'ai créé 3 dossiers, un par approche utilisée pour le traitement, il en existe d'autres, mais, pour la détection, ce sont les plus utiles (selon moi).
+Pour se faire, j'ai créé plusieurs programmes, ils font tous la même chose, détecter les visages et indiquer si un masque est porté ([modèle](https://github.com/luxonis/depthai-experiments/tree/master/gen2-coronamask)). J'ai créé 3 dossiers, un par approche possible pour le traitement, elles reposent principalement sur ces 3 objets :
+- [NeuralNetwork](https://docs.luxonis.com/projects/api/en/latest/references/python/#depthai.NeuralNetwork) : approche pour un modèle quelconque.
+- [MobileNetDetectionNetwork](https://docs.luxonis.com/projects/api/en/latest/references/python/#depthai.MobileNetDetectionNetwork) : approche pour un modèle MobileNet.
+- [YoloDetectionNetwork](https://docs.luxonis.com/projects/api/en/latest/references/python/#depthai.YoloDetectionNetwork) : approche pour un modèle YOLO.
 <br><br>
 
 
@@ -14,14 +15,14 @@ Pour utiliser un modèle de notre choix, la façon la plus générique de le fai
 
 Gérer la sortie s'avère souvent plus complexe qu'avec des objets plus spécifiques, cependant, avec une instance NeuralNetwork, il est certain que le modèle pourra être utilisé (en supposant qu'il soit au bon format pour la Myriade X).
 
-Des exemples d'utilisations sont disponibles dans le dossier "as_neuralNetwork".
+Des explications plus détaillées sont disponibles dans le dossier "as_neuralNetwork".
 <br><br>
 
 
-## Réseau de neurones de détection spécifique
+## Réseau de neurones [MobileNet](https://docs.openvinotoolkit.org/latest/omz_models_model_mobilenet_ssd.html)
 
-Certains objets sont très spécifiques, il en existe beaucoup, le fonctionnement est souvent le même, je ne vais donc en présenter qu'un, celui de l'objet [MobileNetDetectionNetwork](https://docs.luxonis.com/projects/api/en/latest/references/python/#depthai.MobileNetDetectionNetwork).
+Il existe un objet plus spécifique que NeuralNetwork pour utiliser un modèle de détection [MobileNet](https://docs.openvinotoolkit.org/latest/omz_models_model_mobilenet_ssd.html), [MobileNetDetectionNetwork](https://docs.luxonis.com/projects/api/en/latest/references/python/#depthai.MobileNetDetectionNetwork), son intéret est qu'il simplifie beaucoup l'utilisation d'un modèle compatible par rapport à l'objet générique.
 
-Comme son nom l'indique, l'objet [MobileNetDetectionNetwork](https://docs.luxonis.com/projects/api/en/latest/references/python/#depthai.MobileNetDetectionNetwork) est plus spécifique que NeuralNetwork et DetectionNetwork, il n'est utilisable qu'avec des modèles basés sur [MobileNet-SSD](https://docs.openvinotoolkit.org/latest/omz_models_model_mobilenet_ssd.html). Son intéret est qu'il simplifie beaucoup l'utilisation d'un modèle compatible par rapport aux objets plus génériques.
+Pour pouvoir obtenir les coordonnées spatiales, il faut privilégier l'objet [MobileNetSpatialDetectionNetwork](https://docs.luxonis.com/projects/api/en/latest/references/python/#depthai.MobileNetSpatialDetectionNetwork), il fait implicitement le travail d'un calculateur de localisation spatiale.
 
-Des exemples d'utilisations sont disponibles dans le dossier "as_specificDetectionNetwork".
+Des explications plus détaillées sont disponibles dans le dossier "as_mobilenetDetectionNetwork".
