@@ -11,9 +11,9 @@ def frame_process(frame, detection):
     topleft = (int(detection.xmin*frame_width), int(detection.ymin*frame_height))
     bottomright = (int(detection.xmax*frame_width), int(detection.ymax*frame_height))
     bottomleft = (int(detection.xmin*frame_width), int(detection.ymax*frame_height))
-    cv2.rectangle(frame, topleft, bottomright, (255,0,0), 2) # ROI
-    cv2.putText(frame, labels[detection.label], topleft, cv2.FONT_HERSHEY_TRIPLEX, 1.5, (200,0,160)) # Label
-    cv2.putText(frame, f"{int(detection.confidence * 100)}%", bottomleft, cv2.FONT_HERSHEY_TRIPLEX, 1, (255,0,0)) # Confidence
+    color = (255,0,0)
+    cv2.rectangle(frame, topleft, bottomright, color, 2) # ROI
+    cv2.putText(frame, labels[detection.label] + f" {int(detection.confidence * 100)}%", (topleft[0] + 10, topleft[1] + 20), cv2.FONT_HERSHEY_TRIPLEX, 0.5, color) # Label and confidence
     return frame
 
 
@@ -22,19 +22,24 @@ def frame_process(frame, detection):
 nn_path = str(Path(__file__).parent) + "/model.blob" # path to the neural network compiled model (.blob)
 labels = ["background", "no mask", "mask", "no mask"]
 pipeline = dai.Pipeline()
+frame_width = 300
+frame_height = 300
+fps_limit = 20
 
-# Define sources  (middle camera)
+
+# Set rgb camera source
 cam_rgb = pipeline.createColorCamera()
-cam_rgb.setPreviewSize(300, 300)
+cam_rgb.setPreviewSize(frame_width, frame_height)
 cam_rgb.setInterleaved(False)
-cam_rgb.setFps(20)
+cam_rgb.setFps(fps_limit)
+
 
 # Configure neural network settings
 nn = pipeline.createMobileNetDetectionNetwork()
 nn.setConfidenceThreshold(0.5) # keep detections if confidence>50%
 nn.setBlobPath(nn_path)
-nn.setNumInferenceThreads(2)
 cam_rgb.preview.link(nn.input) # link cam_rgb to nn input layer
+
 
 # Set rgb output stream
 rgb_output_stream = pipeline.createXLinkOut()
