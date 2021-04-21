@@ -54,11 +54,14 @@ Génère le .blob (dans le repertoire actuel si seul le nom du fichier est spéc
 
 ## 3. Faire tourner le modèle dans le OAK-D
 
-Cela se fait grâce à l'objet [NeuralNetwork](https://docs.luxonis.com/projects/api/en/latest/references/python/#depthai.NeuralNetwork) de la bibliothèque DepthAI, il faut simplement lui passer le modèle et gérer sa sortie de manière appropriée.
+Cela se fait en instanciant des objets proposés par la bibliothèque DepthAI, le plus générique d'entre eux est [NeuralNetwork](https://docs.luxonis.com/projects/api/en/latest/references/python/#depthai.NeuralNetwork), il faut lui passer le modèle et gérer la sortie de manière appropriée.
 
 ```py
+# Instanciation du réseau de neurones
 nn = pipeline.createNeuralNetwork()
 nn.setBlobPath("chemin/vers/le.blob")
 ```
 
-Un exemple est disponibles dans le dossier "run_samples".
+Cependant, il existe beaucoup d'autres objets plus spécifiques, comme [MobileNetDetectionNetwork](https://docs.luxonis.com/projects/api/en/latest/references/python/#depthai.MobileNetDetectionNetwork), l'intérêt est que la sortie de l'instance d'un objet plus spécifique est souvent plus simple à traiter.
+
+Dans le dossier "run_model", l'utilisation de diverses objets est montré via la réalisation d'un même programme de plusieurs façons différentes.
