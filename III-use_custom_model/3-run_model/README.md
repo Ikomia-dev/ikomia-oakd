@@ -2,7 +2,7 @@
 
 Pour utiliser un modèle de notre choix, il faut se servir des objets proposés par la [bibliothèque](https://docs.luxonis.com/projects/api/en/latest/references/python/) DepthAI, je vais expliquer pourquoi et comment se servir d'eux.
 
-Pour se faire, j'ai créé plusieurs programmes, ils font tous la même chose, détecter les visages et indiquer si un masque est porté ([modèle](https://github.com/luxonis/depthai-experiments/tree/master/gen2-coronamask)). J'ai créé 3 dossiers, un par approche possible pour le traitement, elles reposent principalement sur ces 3 objets :
+Pour se faire, j'ai créé plusieurs programmes assez similaire, dans 3 dossiers, un par approche possible pour le traitement, elles reposent principalement sur ces 3 objets :
 - [NeuralNetwork](https://docs.luxonis.com/projects/api/en/latest/references/python/#depthai.NeuralNetwork) : approche pour un modèle quelconque.
 - [MobileNetDetectionNetwork](https://docs.luxonis.com/projects/api/en/latest/references/python/#depthai.MobileNetDetectionNetwork) : approche pour un modèle MobileNet.
 - [YoloDetectionNetwork](https://docs.luxonis.com/projects/api/en/latest/references/python/#depthai.YoloDetectionNetwork) : approche pour un modèle YOLO.
@@ -26,3 +26,13 @@ Il existe un objet plus spécifique que NeuralNetwork pour utiliser un modèle d
 Pour pouvoir obtenir les coordonnées spatiales, il faut privilégier l'objet [MobileNetSpatialDetectionNetwork](https://docs.luxonis.com/projects/api/en/latest/references/python/#depthai.MobileNetSpatialDetectionNetwork), il fait implicitement le travail d'un calculateur de localisation spatiale.
 
 Des explications plus détaillées sont disponibles dans le dossier "as_mobilenetDetectionNetwork".
+<br><br>
+
+
+## Réseau de neurones [YOLO](https://appsilon.com/object-detection-yolo-algorithm/)
+
+Il existe un objet plus spécifique que NeuralNetwork pour utiliser un modèle de détection [YOLO](https://appsilon.com/object-detection-yolo-algorithm/), [YoloDetectionNetwork](https://docs.luxonis.com/projects/api/en/latest/references/python/#depthai.YoloDetectionNetwork), son intéret est qu'il simplifie beaucoup l'utilisation d'un modèle compatible par rapport à l'objet générique.
+
+Pour pouvoir obtenir les coordonnées spatiales, il faut privilégier l'objet [YoloSpatialDetectionNetwork](https://docs.luxonis.com/projects/api/en/latest/references/python/#depthai.YoloSpatialDetectionNetwork), il fait implicitement le travail d'un calculateur de localisation spatiale.
+
+Des explications plus détaillées sont disponibles dans le dossier "as_yoloDetectionNetwork".
