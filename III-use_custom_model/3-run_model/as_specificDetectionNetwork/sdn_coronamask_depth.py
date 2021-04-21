@@ -21,7 +21,7 @@ def frame_process(frame, detection):
 
 
 # Define program parameters
-nn_path = str(Path(__file__).parent) + "/model.blob" # path to the neural network compiled model (.blob)
+nn_path = str(Path(__file__).parent) + "/../models/coronamask.blob" # path to the neural network compiled model (.blob)
 labels = ["background", "no mask", "mask", "no mask"]
 pipeline = dai.Pipeline()
 frame_width = 300

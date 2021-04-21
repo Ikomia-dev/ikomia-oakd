@@ -1,0 +1,1 @@
+Le modèle utilisé est le "coronamask" proposé dans un [exemple](https://github.com/luxonis/depthai-experiments/tree/master/gen2-coronamask) de Luxonis.
