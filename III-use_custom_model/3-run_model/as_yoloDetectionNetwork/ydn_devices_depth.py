@@ -21,7 +21,7 @@ def frame_process(frame, detection):
 
 
 # Define program parameters
-nn_path = str(Path(__file__).parent) + "/../models/devices.blob" # path to the neural network compiled model (.blob)
+nn_path = str(Path(__file__).parent) + "/../../../models/devices.blob" # path to the neural network compiled model (.blob)
 labels = [
     "person",         "bicycle",    "car",           "motorbike",     "aeroplane",   "bus",           "train",
     "truck",          "boat",       "traffic light", "fire hydrant",  "stop sign",   "parking meter", "bench",
