@@ -9,7 +9,6 @@ from pathlib import Path
 def frame_process(frame, detection):
     topleft = (int(detection.xmin*frame_width), int(detection.ymin*frame_height))
     bottomright = (int(detection.xmax*frame_width), int(detection.ymax*frame_height))
-    bottomleft = (int(detection.xmin*frame_width), int(detection.ymax*frame_height))
     color = (255,0,0)
     cv2.rectangle(frame, topleft, bottomright, color, 2) # ROI
     cv2.putText(frame, labels[detection.label] + f" {int(detection.confidence * 100)}%", (topleft[0] + 10, topleft[1] + 20), cv2.FONT_HERSHEY_TRIPLEX, 0.5, color) # Label and confidence
