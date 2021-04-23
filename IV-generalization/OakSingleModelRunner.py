@@ -13,6 +13,8 @@ class OakSingleModelRunner:
         self.__isAnyNeuralNetworkModel = False
         self.__pipeline = dai.Pipeline()
         self.middle_cam = None
+        self.left_cam = None
+        self.right_cam = None
         self.stereo = None
         self.nn = None
         self.labels = []
@@ -58,7 +60,7 @@ class OakSingleModelRunner:
         self.spatial_location_calculator.out.link(self.__spatial_calculator_output_stream.input)
 
 
-    def __setModel(self, path, link_middle_cam=True):
+    def __setModel(self, path, link_middle_cam):
         # Warn user
         if(link_middle_cam and self.middle_cam is None):
             print("To link the middle camera you should configure it (call setMiddleCamera), skipped..")
