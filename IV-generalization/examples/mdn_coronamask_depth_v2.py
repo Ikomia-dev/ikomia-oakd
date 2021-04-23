@@ -1,12 +1,19 @@
-from OakSingleModelRunner import OakSingleModelRunner
 from pathlib import Path
 import depthai as dai
 import cv2
 
+# Importing from parent folder is harder
+import importlib.util
+import inspect
+spec = importlib.util.spec_from_file_location("OakSingleModelRunner", str(Path(__file__).parent) + "/../OakSingleModelRunner.py")
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+OakSingleModelRunner = inspect.getmembers(module)[0][1]
+
 
 def main():
     # Set few parameters
-    nn_path = str(Path(__file__).parent) + "/../models/coronamask.blob"
+    nn_path = str(Path(__file__).parent) + "/../../models/coronamask.blob"
     labels = ["background", "no mask", "mask", "no mask"]
 
     # Init pipeline
