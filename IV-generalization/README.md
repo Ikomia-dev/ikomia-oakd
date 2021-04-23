@@ -10,7 +10,7 @@ L'idée est de se créer un genre de petite bibliothèque, cela va faire gagner 
 
 J'ai créé une classe générique qui peut servir de base à nos programmes, l'instancier permet d'avoir un "runner", il suffit de le configurer via l'appel de quelques méthodes, puis, utiliser la méthode "run" en passant en paramètre la fonction appliquant le traitement souhaité.
 
-![diagramme de classe simplifié](runner_simplified_class_diagram.png "diagramme de classe simplifié")
+![diagramme de classe simplifié](runner_simplified_class_diagram.PNG "diagramme de classe simplifié")
 
 Cela permet d'écrire un programme en très peu de lignes, voici par exemple, un programme équivalent au [mdn_coronamask](https://github.com/Ikomia-dev/ikomia-oakd/blob/main/III-use_custom_model/3-run_model/as_mobilenetDetectionNetwork/mdn_coronamask.py) du point [III.3](https://github.com/Ikomia-dev/ikomia-oakd/tree/main/III-use_custom_model/3-run_model) (qui comptabilise environ 80 lignes).
 
