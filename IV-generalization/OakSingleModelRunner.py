@@ -10,16 +10,14 @@ spatial_calculator_output_stream_name = "spatial_data"
 
 class OakSingleModelRunner:
     def __init__(self):
+        self.__isAnyNeuralNetworkModel = False
         self.__pipeline = dai.Pipeline()
         self.middle_cam = None
-        self.left_cam = None
-        self.right_cam = None
         self.stereo = None
         self.nn = None
         self.labels = []
-        self.__isAnyNeuralNetworkModel = False
-        
-        
+
+
     def setMiddleCamera(self, frame_width, frame_height):
         # Needed configuration
         self.middle_cam = self.__pipeline.createColorCamera()
@@ -30,7 +28,7 @@ class OakSingleModelRunner:
         self.__middle_cam_output_stream.setStreamName(middle_cam_stream_name)
         self.middle_cam.preview.link(self.__middle_cam_output_stream.input)
 
-    
+
     def setDepth(self, sensor_resolution=dai.MonoCameraProperties.SensorResolution.THE_400_P):
         # Configure cameras
         self.left_cam = self.__pipeline.createMonoCamera()
@@ -45,12 +43,12 @@ class OakSingleModelRunner:
         self.left_cam.out.link(self.stereo.left)
         self.right_cam.out.link(self.stereo.right)
 
-    
+
     def __setSpatialLocationCalculator(self):
         # Configure spatial location calculator
         self.spatial_location_calculator = self.__pipeline.createSpatialLocationCalculator()
         self.stereo.depth.link(self.spatial_location_calculator.inputDepth)
-        
+
         # Set spatial location calculator input/output stream
         self.__spatial_calculator_input_stream = self.__pipeline.createXLinkIn()
         self.__spatial_calculator_input_stream.setStreamName(spatial_calculator_input_stream_name)
@@ -64,7 +62,7 @@ class OakSingleModelRunner:
         # Warn user
         if(link_middle_cam and self.middle_cam is None):
             print("To link the middle camera you should configure it (call setMiddleCamera), skipped..")
-        
+
         # Needed configuration
         self.nn.setBlobPath(path)
 
@@ -89,34 +87,34 @@ class OakSingleModelRunner:
             else: # Init the spatial location calculator
                 self.__setSpatialLocationCalculator()
 
-    
+
     def setMobileNetDetectionModel(self, path, treshold=0.5, link_middle_cam=True, link_depth=True):
         if(link_depth):
             if(self.stereo is None): # Warn user
                 print("To link the depth you should configure it (call setDepth), skipped..")
                 self.nn = self.__pipeline.createMobileNetDetectionNetwork()
-            else: # Init the spatial location calculator
+            else: # Handle depth
                 self.nn = self.__pipeline.createMobileNetSpatialDetectionNetwork()
                 self.stereo.depth.link(self.nn.inputDepth)
-            self.nn.setConfidenceThreshold(treshold)
+        self.nn.setConfidenceThreshold(treshold)
         self.__setModel(path, link_middle_cam)
 
-    
+
     def setYoloDetectionModel(self, path, num_classes, coordinate_size, anchors, anchor_masks, treshold=0.5, link_middle_cam=True, link_depth=True):
         if(link_depth):
             if(self.stereo is None): # Warn user
                 print("To link the depth you should configure it (call setDepth), skipped..")
                 self.nn = self.__pipeline.createYoloDetectionNetwork()
-            else: # Init the spatial location calculator
+            else: # Handle depth
                 self.nn = self.__pipeline.createYoloSpatialDetectionNetwork()
                 self.stereo.depth.link(self.nn.inputDepth)
-            self.nn.setConfidenceThreshold(treshold)
-            self.nn.setNumClasses(num_classes)
-            self.nn.setCoordinateSize(coordinate_size)
-            self.nn.setAnchors(anchors)
-            self.nn.setAnchorMasks(anchor_masks)
+        self.nn.setConfidenceThreshold(treshold)
+        self.nn.setNumClasses(num_classes)
+        self.nn.setCoordinateSize(coordinate_size)
+        self.nn.setAnchors(anchors)
+        self.nn.setAnchorMasks(anchor_masks)
         self.__setModel(path, link_middle_cam)
-        
+
 
     def run(self, process, middle_cam_queue_size=1, block_middle_cam_queue=False, nn_queue_size=1, block_nn_queue=False, spatial_calculator_input_queue_size=1, block_spatial_calculator_input_queue=False, spatial_calculator_output_queue_size=1, block_spatial_calculator_output_queue=False):
         # Find the connected device (example: OAK-D)
