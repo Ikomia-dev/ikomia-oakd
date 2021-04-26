@@ -1,16 +1,12 @@
 from pathlib import Path
 import depthai as dai
 import cv2
-from ..utils.Drawing import drawROI
+import sys
 
-# Importing from parent folder is harder
-import importlib.util
-import inspect
-spec = importlib.util.spec_from_file_location("OakSingleModelRunner", str(Path(__file__).parent) + "/../OakSingleModelRunner.py")
-module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(module)
-OakSingleModelRunner = inspect.getmembers(module)[0][1]
-
+# Importing from parent folder
+sys.path.insert(0, str(Path(__file__).parent.parent)) # move to parent path
+from utils.OakSingleModelRunner import OakSingleModelRunner
+from utils.draw import drawROI
 
 
 def main():
@@ -47,16 +43,16 @@ def process(runner):
     for i in range(100): # There is 100 detections, not all of them are relevant
         if (tensor[i*7 + 2] >0.5): # 3rd value of each detection is the confidence
             keeped_roi.append(tensor[i*7:i*7+7])
-
-    # Set spatial location config (input ROIs into the calculator)
-    spatial_calculator_config = dai.SpatialLocationCalculatorConfig()
-    for  id, label, confidence, left, top, right, bottom  in  keeped_roi:
-        spatial_config_data = dai.SpatialLocationCalculatorConfigData()
-        spatial_config_data.roi = dai.Rect(dai.Point2f(left, top), dai.Point2f(right, bottom))
-        spatial_calculator_config.addROI(spatial_config_data)
-
-    # Draw infos
+    
     if(len(keeped_roi)>0):
+        # Set spatial location config (input ROIs into the calculator)
+        spatial_calculator_config = dai.SpatialLocationCalculatorConfig()
+        for  id, label, confidence, left, top, right, bottom  in  keeped_roi:
+            spatial_config_data = dai.SpatialLocationCalculatorConfigData()
+            spatial_config_data.roi = dai.Rect(dai.Point2f(left, top), dai.Point2f(right, bottom))
+            spatial_calculator_config.addROI(spatial_config_data)
+
+        # Draw infos
         runner.spatial_calculator_input_queue.send(spatial_calculator_config)
         spatial_data = runner.spatial_calculator_output_queue.get().getSpatialLocations()
         for i in range(len(keeped_roi)):

@@ -7,17 +7,17 @@ def drawROI(frame, topleft, bottomright, label=None, confidence=None, spatialCoo
         topleft = (int(topleft[0]*frame_width), int(topleft[1]*frame_height))
         bottomright = (int(bottomright[0]*frame_width), int(bottomright[1]*frame_height))
 
-    # # Draw ROI
+    # Draw ROI
     cv2.rectangle(frame, topleft, bottomright, color, 2)
     
-    # # Classify the detection
+    # Classify the detection
     if(label is not None):
         if(confidence is not None):
             cv2.putText(frame, label + f" {int(confidence * 100)}%", (topleft[0] + 10, topleft[1] + 20), cv2.FONT_HERSHEY_TRIPLEX, 0.5, color)
         else:
             cv2.putText(frame, label, (topleft[0] + 10, topleft[1] + 20), cv2.FONT_HERSHEY_TRIPLEX, 0.5, color)
 
-    # # Display spatial coordinates
+    # Display spatial coordinates
     if(spatialCoordinates is not None):
         cv2.putText(frame, f"X: {int(spatialCoordinates.x)} mm", (topleft[0] + 10, topleft[1] + 50), cv2.FONT_HERSHEY_TRIPLEX, 0.5, color)
         cv2.putText(frame, f"Y: {int(spatialCoordinates.y)} mm", (topleft[0] + 10, topleft[1] + 65), cv2.FONT_HERSHEY_TRIPLEX, 0.5, color)
