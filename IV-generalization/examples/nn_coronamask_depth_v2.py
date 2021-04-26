@@ -6,6 +6,7 @@ import sys
 # Importing from parent folder
 sys.path.insert(0, str(Path(__file__).parent.parent)) # move to parent path
 from utils.OakSingleModelRunner import OakSingleModelRunner
+from utils.compute import updateSpatialCalculatorConfig
 from utils.draw import drawROI, displayFPS
 
 
@@ -50,11 +51,7 @@ def process(runner):
         # Set spatial location config (input ROIs into the calculator)
         spatial_calculator_config = dai.SpatialLocationCalculatorConfig()
         for  id, label, confidence, left, top, right, bottom  in  keeped_roi:
-            spatial_config_data = dai.SpatialLocationCalculatorConfigData()
-            spatial_config_data.depthThresholds.lowerThreshold = 250
-            spatial_config_data.depthThresholds.upperThreshold = 5000
-            spatial_config_data.roi = dai.Rect(dai.Point2f(left, top), dai.Point2f(right, bottom))
-            spatial_calculator_config.addROI(spatial_config_data)
+            updateSpatialCalculatorConfig(spatial_calculator_config, dai.Point2f(left, top), dai.Point2f(right, bottom))
 
         # Draw infos
         runner.spatial_calculator_input_queue.send(spatial_calculator_config)
