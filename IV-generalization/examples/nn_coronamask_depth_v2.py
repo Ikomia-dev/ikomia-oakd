@@ -1,6 +1,7 @@
 from pathlib import Path
 import depthai as dai
 import cv2
+from ..utils.Drawing import drawROI
 
 # Importing from parent folder is harder
 import importlib.util
@@ -9,6 +10,7 @@ spec = importlib.util.spec_from_file_location("OakSingleModelRunner", str(Path(_
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 OakSingleModelRunner = inspect.getmembers(module)[0][1]
+
 
 
 def main():
@@ -38,9 +40,6 @@ def main():
 
 # Process function
 def process(runner):
-    color = (255,0,0)
-    frame_width = runner.middle_cam.getPreviewWidth()
-    frame_height = runner.middle_cam.getPreviewHeight()
     frame = runner.middle_cam_output_queue.get().getCvFrame()
     tensor = runner.nn_output_queue.get().getLayerFp16("DetectionOutput")
     
@@ -49,26 +48,19 @@ def process(runner):
         if (tensor[i*7 + 2] >0.5): # 3rd value of each detection is the confidence
             keeped_roi.append(tensor[i*7:i*7+7])
 
+    # Set spatial location config (input ROIs into the calculator)
     spatial_calculator_config = dai.SpatialLocationCalculatorConfig()
     for  id, label, confidence, left, top, right, bottom  in  keeped_roi:
-        topleft = (int(left*frame_width), int(top*frame_height))
-        bottomright = (int(right*frame_width), int(bottom*frame_height))
-        cv2.rectangle(frame, topleft, bottomright, color, 2) # ROI
-        cv2.putText(frame, runner.labels[int(label)] + f" {int(confidence * 100)}%", (topleft[0] + 10, topleft[1] + 20), cv2.FONT_HERSHEY_TRIPLEX, 0.5, color) # Label and confidence
-
-        # Add ROIs to spatial location calculator config
         spatial_config_data = dai.SpatialLocationCalculatorConfigData()
-        spatial_config_data.roi = dai.Rect(dai.Point2f(topleft[0], topleft[1]), dai.Point2f(bottomright[0], bottomright[1]))
+        spatial_config_data.roi = dai.Rect(dai.Point2f(left, top), dai.Point2f(right, bottom))
         spatial_calculator_config.addROI(spatial_config_data)
 
-    # Put spatial location info inside of the ROI
+    # Draw infos
     if(len(keeped_roi)>0):
         runner.spatial_calculator_input_queue.send(spatial_calculator_config)
         spatial_data = runner.spatial_calculator_output_queue.get().getSpatialLocations()
-        for depth_data in spatial_data:
-            cv2.putText(frame, f"X: {int(depth_data.spatialCoordinates.x)} mm", (topleft[0] + 10, topleft[1] + 50), cv2.FONT_HERSHEY_TRIPLEX, 0.5, color)
-            cv2.putText(frame, f"Y: {int(depth_data.spatialCoordinates.y)} mm", (topleft[0] + 10, topleft[1] + 65), cv2.FONT_HERSHEY_TRIPLEX, 0.5, color)
-            cv2.putText(frame, f"Z: {int(depth_data.spatialCoordinates.z)} mm", (topleft[0] + 10, topleft[1] + 80), cv2.FONT_HERSHEY_TRIPLEX, 0.5, color)
+        for i in range(len(keeped_roi)):
+            frame = drawROI(frame, (keeped_roi[i][3],keeped_roi[i][4]), (keeped_roi[i][5],keeped_roi[i][6]), label=runner.labels[int(keeped_roi[i][1])], confidence=keeped_roi[i][2], spatialCoordinates=spatial_data[i].spatialCoordinates)
 
     cv2.imshow("output", frame)
 
