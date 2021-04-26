@@ -1,4 +1,5 @@
 import depthai as dai
+import time
 import cv2
 
 
@@ -18,6 +19,8 @@ class OakSingleModelRunner:
         self.stereo = None
         self.nn = None
         self.labels = []
+        self.__starttime = None
+        self.__framecount = 0
 
 
     def setMiddleCamera(self, frame_width, frame_height):
@@ -117,6 +120,13 @@ class OakSingleModelRunner:
         self.nn.setAnchorMasks(anchor_masks)
         self.__setModel(path, link_middle_cam)
 
+    
+    def getFPS(self):
+        if(self.__starttime):
+            return self.__framecount / (time.time() - self.__starttime)
+        else:
+            return 0
+
 
     def run(self, process, middle_cam_queue_size=1, block_middle_cam_queue=False, nn_queue_size=1, block_nn_queue=False, spatial_calculator_input_queue_size=1, block_spatial_calculator_input_queue=False, spatial_calculator_output_queue_size=1, block_spatial_calculator_output_queue=False):
         # Find the connected device (example: OAK-D)
@@ -132,8 +142,10 @@ class OakSingleModelRunner:
                 self.spatial_calculator_input_queue = device.getInputQueue(name=spatial_calculator_input_stream_name, maxSize=spatial_calculator_input_queue_size, blocking=block_spatial_calculator_input_queue)
                 self.spatial_calculator_output_queue = device.getOutputQueue(name=spatial_calculator_output_stream_name, maxSize=spatial_calculator_output_queue_size, blocking=block_spatial_calculator_output_queue)
 
+            self.__starttime = time.time()
             # Enter into processing loop
             while True:
                 process(self) # Call the process function
+                self.__framecount += 1
                 if cv2.waitKey(1) == ord('q'):
                     break

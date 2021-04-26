@@ -6,7 +6,7 @@ import sys
 # Importing from parent folder
 sys.path.insert(0, str(Path(__file__).parent.parent)) # move to parent path
 from utils.OakSingleModelRunner import OakSingleModelRunner
-from utils.draw import drawROI
+from utils.draw import drawROI, displayFPS
 
 
 def main():
@@ -56,8 +56,9 @@ def process(runner):
         runner.spatial_calculator_input_queue.send(spatial_calculator_config)
         spatial_data = runner.spatial_calculator_output_queue.get().getSpatialLocations()
         for i in range(len(keeped_roi)):
-            frame = drawROI(frame, (keeped_roi[i][3],keeped_roi[i][4]), (keeped_roi[i][5],keeped_roi[i][6]), label=runner.labels[int(keeped_roi[i][1])], confidence=keeped_roi[i][2], spatialCoordinates=spatial_data[i].spatialCoordinates)
+            drawROI(frame, (keeped_roi[i][3],keeped_roi[i][4]), (keeped_roi[i][5],keeped_roi[i][6]), label=runner.labels[int(keeped_roi[i][1])], confidence=keeped_roi[i][2], spatialCoordinates=spatial_data[i].spatialCoordinates)
 
+    displayFPS(frame, runner.getFPS())
     cv2.imshow("output", frame)
 
 

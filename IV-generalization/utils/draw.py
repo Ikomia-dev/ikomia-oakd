@@ -1,5 +1,6 @@
 import cv2
 
+
 def drawROI(frame, topleft, bottomright, label=None, confidence=None, spatialCoordinates=None, color=(0,0,255)):
     # Convert percentage coordinates into pixel coordinates (if necessary)
     if(not isinstance(topleft, (int, int)) and not isinstance(bottomright, (int, int))):
@@ -23,3 +24,7 @@ def drawROI(frame, topleft, bottomright, label=None, confidence=None, spatialCoo
         cv2.putText(frame, f"Y: {int(spatialCoordinates.y)} mm", (topleft[0] + 10, topleft[1] + 65), cv2.FONT_HERSHEY_TRIPLEX, 0.5, color)
         cv2.putText(frame, f"Z: {int(spatialCoordinates.z)} mm", (topleft[0] + 10, topleft[1] + 80), cv2.FONT_HERSHEY_TRIPLEX, 0.5, color)
     return frame
+
+
+def displayFPS(frame, fps, color=(255,255,255)):
+    cv2.putText(frame, f"NN fps: {int(fps)}", (2, frame.shape[0] - 4), cv2.FONT_HERSHEY_TRIPLEX, 0.4, color=(255, 255, 255))

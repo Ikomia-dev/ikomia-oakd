@@ -6,7 +6,7 @@ import sys
 # Importing from parent folder
 sys.path.insert(0, str(Path(__file__).parent.parent)) # move to parent path
 from utils.OakSingleModelRunner import OakSingleModelRunner
-from utils.draw import drawROI
+from utils.draw import drawROI, displayFPS
 
 
 def main():
@@ -40,6 +40,7 @@ def process(runner):
     
     for detection in detections:
         drawROI(frame, (detection.xmin,detection.ymin), (detection.xmax,detection.ymax), label=runner.labels[detection.label], confidence=detection.confidence, spatialCoordinates=detection.spatialCoordinates)
+    displayFPS(frame, runner.getFPS())
     cv2.imshow("output", frame)
 
 
