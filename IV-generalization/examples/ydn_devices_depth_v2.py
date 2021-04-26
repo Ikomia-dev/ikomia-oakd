@@ -42,11 +42,15 @@ def main():
 
     # Configure stereo depth
     runner.setDepth()
+    runner.stereo.setOutputDepth(True)
+    runner.stereo.setConfidenceThreshold(255)
 
     # Configure neural network model and init input / output streams
     runner.setYoloDetectionModel(path=nn_path, num_classes=len(labels), coordinate_size=coordinate_size, anchors=anchors, anchor_masks=anchor_masks)
     runner.labels = labels
     runner.nn.setIouThreshold(0.5)
+    runner.nn.setDepthLowerThreshold(250)
+    runner.nn.setDepthUpperThreshold(5000)
 
     # Run the loop that call the process function
     runner.run(process=process, middle_cam_queue_size=4, nn_queue_size=4)

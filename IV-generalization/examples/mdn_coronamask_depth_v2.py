@@ -24,9 +24,13 @@ def main():
 
     # Configure stereo depth
     runner.setDepth()
+    runner.stereo.setOutputDepth(True)
+    runner.stereo.setConfidenceThreshold(255)
 
     # Configure neural network model and init input / output streams
     runner.setMobileNetDetectionModel(path=nn_path)
+    runner.nn.setDepthLowerThreshold(250)
+    runner.nn.setDepthUpperThreshold(5000)
     runner.labels = labels
 
     # Run the loop that call the process function

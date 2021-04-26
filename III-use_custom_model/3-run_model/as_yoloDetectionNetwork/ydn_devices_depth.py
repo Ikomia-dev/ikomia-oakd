@@ -43,6 +43,8 @@ fps_limit = 20
 
 # Prepare depth handling
 depth = pipeline.createStereoDepth()
+depth.setOutputDepth(True)
+depth.setConfidenceThreshold(255)
 
 # Set depth source
 left = pipeline.createMonoCamera()
@@ -69,6 +71,8 @@ nn.setCoordinateSize(4)
 nn.setAnchors(np.array([10,14, 23,27, 37,58, 81,82, 135,169, 344,319]))
 nn.setAnchorMasks({"side26": np.array([1, 2, 3]), "side13": np.array([3, 4, 5])})
 nn.setIouThreshold(0.5)
+nn.setDepthLowerThreshold(250)
+nn.setDepthUpperThreshold(5000)
 cam_rgb.preview.link(nn.input) # link cam_rgb to nn input layer
 
 

@@ -22,6 +22,8 @@ def frame_process(frame, tensor):
         
         # Add ROIs to spatial location calculator config
         spatial_config_data = dai.SpatialLocationCalculatorConfigData()
+        spatial_config_data.depthThresholds.lowerThreshold = 250
+        spatial_config_data.depthThresholds.upperThreshold = 5000
         spatial_config_data.roi = dai.Rect(dai.Point2f(topleft[0], topleft[1]), dai.Point2f(bottomright[0], bottomright[1]))
         spatial_calculator_config.addROI(spatial_config_data)
 
@@ -52,6 +54,8 @@ spatial_location_calculator.setWaitForConfigInput(True)
 
 # Prepare depth handling
 depth = pipeline.createStereoDepth()
+depth.setOutputDepth(True)
+depth.setConfidenceThreshold(255)
 depth.depth.link(spatial_location_calculator.inputDepth)
 
 # Set spatial location calculator input/output stream

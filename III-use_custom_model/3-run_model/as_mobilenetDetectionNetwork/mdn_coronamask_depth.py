@@ -29,6 +29,8 @@ fps_limit = 20
 
 # Prepare depth handling
 depth = pipeline.createStereoDepth()
+depth.setOutputDepth(True)
+depth.setConfidenceThreshold(255)
 
 # Set depth source
 left = pipeline.createMonoCamera()
@@ -51,6 +53,8 @@ nn = pipeline.createMobileNetSpatialDetectionNetwork()
 nn.setConfidenceThreshold(0.5) # keep detections if confidence>50%
 nn.setBlobPath(nn_path)
 nn.setNumInferenceThreads(2)
+nn.setDepthLowerThreshold(250)
+nn.setDepthUpperThreshold(5000)
 cam_rgb.preview.link(nn.input) # link cam_rgb to nn input layer
 
 

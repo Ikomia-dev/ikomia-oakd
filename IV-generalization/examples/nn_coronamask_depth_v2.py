@@ -24,6 +24,8 @@ def main():
 
     # Configure stereo depth
     runner.setDepth()
+    runner.stereo.setOutputDepth(True)
+    runner.stereo.setConfidenceThreshold(255)
 
     # Configure neural network model and init input / output streams
     runner.setNeuralNetworkModel(path=nn_path)
@@ -49,6 +51,8 @@ def process(runner):
         spatial_calculator_config = dai.SpatialLocationCalculatorConfig()
         for  id, label, confidence, left, top, right, bottom  in  keeped_roi:
             spatial_config_data = dai.SpatialLocationCalculatorConfigData()
+            spatial_config_data.depthThresholds.lowerThreshold = 250
+            spatial_config_data.depthThresholds.upperThreshold = 5000
             spatial_config_data.roi = dai.Rect(dai.Point2f(left, top), dai.Point2f(right, bottom))
             spatial_calculator_config.addROI(spatial_config_data)
 
