@@ -27,4 +27,4 @@ def drawROI(frame, topleft, bottomright, label=None, confidence=None, spatialCoo
 
 
 def displayFPS(frame, fps, color=(255,255,255)):
-    cv2.putText(frame, f"NN fps: {int(fps)}", (2, frame.shape[0] - 4), cv2.FONT_HERSHEY_TRIPLEX, 0.4, color=(255, 255, 255))
+    cv2.putText(frame, f"fps: {int(fps)}", (2, frame.shape[0] - 4), cv2.FONT_HERSHEY_TRIPLEX, 0.4, color=(255, 255, 255))
