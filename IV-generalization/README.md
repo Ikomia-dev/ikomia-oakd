@@ -2,7 +2,7 @@
 
 Il y a régulièrement des répétitions entre les programmes qui font tourner un modèle sur le OAK-D, c'est pourquoi il me semble important de commencer à créer des fichiers qui regroupent les fonctionnalités communes.
 
-L'idée est de se créer un genre de petite bibliothèque, cela va faire gagner beaucoup de temps. Des exemples d'utilisations sont disponibles dans le répertoire adjacent.
+L'idée est de se créer un genre de petite bibliothèque, cela va faire gagner beaucoup de temps. Ces fichiers sont dans le répertoire "utils" et des exemples d'utilisations sont disponibles dans le répertoire "examples".
 <br><br>
 
 
@@ -46,13 +46,36 @@ runner.labels = ["background", "no mask", "mask", "no mask"]
 # Exécuter la boucle de traitement
 runner.run(process=process)
 ```
-<br><br>
+
+Enfin, j'ai implémenté le calcul du nombre d'images par seconde au runner, il est donc possible de récupérer cette information via un simple appel de méthode.
+
+```py
+runner.getFPS()
+```
+<br>
 
 
 ## Fonctionnalités communes
 
-Le runner permet de gagner beaucoup de temps, mais il est possible de faire mieux. Pour se faire je me lance dans l'écriture de fichiers regroupant des fonctionnalités communes aux programmes (affichage ROI/label, affichage fps...).
+Le runner permet de gagner beaucoup de temps, mais il est possible de faire mieux. Pour se faire, j'ai écris des fichiers regroupant des fonctionnalités communes aux programmes.
 
-Une fois cela fait, je réécrirai le programme ci-dessus, avec encore moins de lignes.
+Pour l'instant il y en a 3, réparties dans 2 fichiers.
+- Afficher le nombre d'images par seconde (utils/draw.py)
+- Dessiner les zones d'intérêts (utils/draw.py)
+- Configurer le [SpatialLocationCalculator](https://docs.luxonis.com/projects/api/en/latest/references/python/#depthai.SpatialLocationCalculator) (utils/compute.py)
 
-(à suivre...)
+Ainsi, pour reprendre le programme ci-dessus, la fonction process peut désormais être écrite en moins de lignes.
+
+```py
+from utils.draw import drawROI, displayFPS
+
+# Process function
+def process(runner):
+    frame = runner.middle_cam_output_queue.get().getCvFrame()
+    detections = runner.nn_output_queue.get().detections
+    
+    for det in detections:
+        drawROI(frame, (det.xmin,det.ymin), (det.xmax,det.ymax),label=runner.labels[det.label], confidence=det.confidence)
+    displayFPS(frame, runner.getFPS())
+    cv2.imshow("output", frame)
+```
