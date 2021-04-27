@@ -18,3 +18,9 @@ Regroupe des fonctions pour écrire/dessiner sur une image.
 
 Regroupe des fonctions pour traiter les données.
 - Configurer l'entrée d'un [SpatialLocationCalculator](https://docs.luxonis.com/projects/api/en/latest/references/python/#depthai.SpatialLocationCalculator)
+<br><br>
+
+
+### pose
+
+Fichier de l'[exemple](https://github.com/luxonis/depthai-experiments/tree/master/gen2-human-pose) de Luxonis, il regroupe des fonctions qui permettent de traiter la sortie du modèle [human pose estimation](https://docs.openvinotoolkit.org/latest/omz_models_model_human_pose_estimation_0001.html).
