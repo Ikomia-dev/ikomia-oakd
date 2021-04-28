@@ -41,12 +41,12 @@ runner.left_cam_manip.initialConfig.setFrameType(dai.ImgFrame.Type.BGR888p)
 runner.right_cam_manip.initialConfig.setFrameType(dai.ImgFrame.Type.BGR888p)
 
 # Configure left camera neural network model and init input / output streams
-runner.addMobileNetDetectionModel(name="nn_left", path=nn_path, treshold=0.3, link_middle_cam=False)
+runner.addMobileNetDetectionModel(name="nn_left", path=nn_path, treshold=0.3, handle_depth=False)
 runner.left_cam_manip.out.link(runner.neural_networks["nn_left"].input)
 runner.labels["nn_left"] = labels
 
 # Configure right camera neural network model and init input / output streams
-runner.addMobileNetDetectionModel(name="nn_right", path=nn_path, treshold=0.3, link_middle_cam=False)
+runner.addMobileNetDetectionModel(name="nn_right", path=nn_path, treshold=0.3, handle_depth=False)
 runner.right_cam_manip.out.link(runner.neural_networks["nn_right"].input)
 runner.labels["nn_right"] = labels
 
