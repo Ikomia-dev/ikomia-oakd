@@ -20,6 +20,7 @@ class OakMultipleModelRunner:
         self.stereo = None
         self.neural_networks = dict()
         self.nn_output_queue = dict()
+        self.__nn_output_queue_parameters = dict()
         self.labels = dict()
         self.__starttime = None
         self.__framecount = 0
@@ -131,18 +132,20 @@ class OakMultipleModelRunner:
         self.neural_networks[name].out.link(nn_output_stream.input)
 
 
-    def addNeuralNetworkModel(self, name, path, link_middle_cam=True, link_depth=True):
+    def addNeuralNetworkModel(self, name, path, output_queue_size=1, block_output_queue=False, link_middle_cam=True, link_depth=True):
         self.neural_networks[name] = self.__pipeline.createNeuralNetwork()
+        self.__nn_output_queue_parameters[name] = [output_queue_size, block_output_queue]
         self.__setModel(name, path, link_middle_cam)
         self.__isAnyNeuralNetworkModel = True
         if(link_depth):
             if(self.stereo is None): # Warn user
                 print("To link the depth you should configure it (call setDepth), skipped..")
-            else: # Init the spatial location calculator
+            elif(self.spatial_location_calculator is None): # If necessary, init the spatial location calculator
                 self.__setSpatialLocationCalculator()
 
 
-    def addMobileNetDetectionModel(self, name, path, treshold=0.5, link_middle_cam=True, link_depth=True):
+    def addMobileNetDetectionModel(self, name, path, output_queue_size=1, block_output_queue=False, treshold=0.5, link_middle_cam=True, link_depth=True):
+        self.__nn_output_queue_parameters[name] = [output_queue_size, block_output_queue]
         if(link_depth):
             if(self.stereo is None): # Warn user
                 print("To link the depth you should configure it (call setDepth), skipped..")
@@ -154,7 +157,8 @@ class OakMultipleModelRunner:
         self.__setModel(name, path, link_middle_cam)
 
 
-    def addYoloDetectionModel(self, name, path, num_classes, coordinate_size, anchors, anchor_masks, treshold=0.5, link_middle_cam=True, link_depth=True):
+    def addYoloDetectionModel(self, name, path, num_classes, coordinate_size, anchors, anchor_masks, output_queue_size=1, block_output_queue=False, treshold=0.5, link_middle_cam=True, link_depth=True):
+        self.__nn_output_queue_parameters[name] = [output_queue_size, block_output_queue]
         if(link_depth):
             if(self.stereo is None): # Warn user
                 print("To link the depth you should configure it (call setDepth), skipped..")
@@ -190,7 +194,7 @@ class OakMultipleModelRunner:
             if(self.right_cam_manip is not None):
                 self.right_cam_output_queue = device.getOutputQueue(name=right_cam_manip_stream_name, maxSize=right_cam_queue_size, blocking=block_right_cam_queue)
             for name in self.neural_networks.keys():
-                self.nn_output_queue[name] = device.getOutputQueue(name=name, maxSize=nn_queue_size, blocking=block_nn_queue)
+                self.nn_output_queue[name] = device.getOutputQueue(name=name, maxSize=self.__nn_output_queue_parameters[name][0], blocking=self.__nn_output_queue_parameters[name][1])
             if(self.__isAnyNeuralNetworkModel and self.stereo is not None):
                 self.spatial_calculator_input_queue = device.getInputQueue(name=spatial_calculator_input_stream_name, maxSize=spatial_calculator_input_queue_size, blocking=block_spatial_calculator_input_queue)
                 self.spatial_calculator_output_queue = device.getOutputQueue(name=spatial_calculator_output_stream_name, maxSize=spatial_calculator_output_queue_size, blocking=block_spatial_calculator_output_queue)
