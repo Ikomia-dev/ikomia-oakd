@@ -1,7 +1,7 @@
 ## Fichiers regroupant des fonctionnalités communes aux programmes.
 <br>
 
-### OakSingleModelRunner
+### OakMultipleModelRunner
 
 classe générique qui peut servir de base à tous nos programmes.
 <br><br>
