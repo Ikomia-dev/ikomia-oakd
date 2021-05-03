@@ -1,28 +1,18 @@
+from utils.draw import displayFPS, drawROI
 from pathlib import Path
 import depthai as dai
-import cv2
-import sys
-import numpy as np
-import math
 import time
-from utils.OakMultipleModelRunner import OakMultipleModelRunner
-from utils.draw import displayFPS, drawROI
-from utils.compute import get_landmark_3d
+import cv2
 
 
 
 # Define program parameters
 nn_face_detection_path = str(Path(__file__).parent) + "/../models/face_detection.blob"
 nn_landmarks_path = str(Path(__file__).parent) + "/../models/landmarks.blob"
-left_camera_position = (0.107, -0.038, 0.008) # for OAK-D
-right_camera_position = (0.109, 0.039, 0.008) # for OAK-D
-cameras = (left_camera_position, right_camera_position)
 
 # Define neural network input sizes
-face_input_width = 300
-face_input_height = 300
-landmarks_input_width = 48
-landmarks_input_height = 48
+face_input_width = 300 # also frame width
+face_input_height = 300 # also frame height
 
 # Init pipeline
 pipeline = dai.Pipeline()
@@ -59,16 +49,6 @@ for side in ["left", "right"]:
     face_nn_output_stream.setStreamName("nn_" + side + "_faces")
     face_nn.out.link(face_nn_output_stream.input)
 
-    # Init the landmarks detection neural network
-    landmarks_nn = pipeline.createNeuralNetwork()
-    landmarks_nn.setBlobPath(nn_face_detection_path)
-    # face_manip.out.link(landmarks_nn.input)
-
-    # Set landmarks detection neural network output stream
-    landmarks_nn_output_stream = pipeline.createXLinkOut()
-    landmarks_nn_output_stream.setStreamName("nn_" + side + "_landmarks")
-    landmarks_nn.out.link(landmarks_nn_output_stream.input)
-
 
 
 with dai.Device(pipeline) as device:
@@ -79,8 +59,8 @@ with dai.Device(pipeline) as device:
         output_queues[side+"_cam"] = device.getOutputQueue(name=side+"_cam", maxSize=4, blocking=False)
         output_queues["nn_"+side+"_faces"] = device.getOutputQueue(name="nn_"+side+"_faces", maxSize=4, blocking=False)
 
-    startTime = time.monotonic()
-    counter = 0
+    start_time = time.monotonic()
+    frame_count = 0
 
 
     while True:
@@ -94,10 +74,10 @@ with dai.Device(pipeline) as device:
 
             for xmin, ymin, xmax, ymax in keeped_faces:
                 drawROI(frame, (xmin,ymin), (xmax,ymax))
-            displayFPS(frame, (counter / (time.monotonic() - startTime)))
+
+            displayFPS(frame, (frame_count / (time.monotonic() - start_time)))
             cv2.imshow(side, frame)
 
-        counter += 1
-        
+        frame_count += 1
         if cv2.waitKey(1) == ord('q'):
             break
