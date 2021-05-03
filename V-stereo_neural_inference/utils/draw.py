@@ -3,7 +3,7 @@ import cv2
 
 def drawROI(frame, topleft, bottomright, label=None, confidence=None, spatialCoordinates=None, color=(0,0,255)):
     # Convert percentage coordinates into pixel coordinates (if necessary)
-    if(not isinstance(topleft, (int, int)) and not isinstance(bottomright, (int, int))):
+    if(not isinstance(topleft[0], int) or not isinstance(topleft[1], int) or not isinstance(bottomright[0], int) or not isinstance(bottomright[1], int)):
         frame_width, frame_height = frame.shape[:2]
         topleft = (int(topleft[0]*frame_width), int(topleft[1]*frame_height))
         bottomright = (int(bottomright[0]*frame_width), int(bottomright[1]*frame_height))
