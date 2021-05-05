@@ -105,8 +105,7 @@ class LandmarkCubeVisualizer:
 
         glTranslatef(0.0,0.0, -self.__size*4)
         glRotatef(270, 1, 0, 0)
-        glRotatef(180, 0, 1, 0)
-        glRotatef(90, 0, 0, 1)
+        glRotatef(270, 0, 0, 1)
 
         while True:
             for event in pygame.event.get():

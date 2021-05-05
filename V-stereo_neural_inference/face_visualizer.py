@@ -72,7 +72,7 @@ for side in ["left", "right"]:
     landmarks_nn.out.link(landmarks_nn_output_stream.input)
 
 
-colors = [(255,0,255), (255,0,255), (255,255,0), (255,255,255), (255,255,255)]
+colors = [(255,255,255), (255,255,255), (255,255,0), (255,0,255), (255,0,255)]
 visualizer = LandmarkCubeVisualizer(face_input_width, face_input_height, 1, [(0.107, -0.038, 0.008), (0.109, 0.039, 0.008)], colors)
 visualizer.start()
 
