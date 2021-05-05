@@ -4,6 +4,7 @@ from OpenGL.GL import *
 import numpy as np
 import threading
 import pygame
+import math
 
 
 
@@ -23,6 +24,25 @@ class LandmarkCubeVisualizer:
         self.__landmarks = []
         self.__centered_landmarks = []
         self.__roi = ()
+        self.__lastPosX = 0
+
+
+    def __mouseMove(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 4:
+            glScaled(1.05, 1.05, 1.05)
+        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 5:
+            glScaled(0.95, 0.95, 0.95)
+
+        if event.type == pygame.MOUSEMOTION:
+            x, y = event.pos
+            dx = x - self.__lastPosX
+
+            mouseState = pygame.mouse.get_pressed()
+            if mouseState[0]:
+                if(dx != 0):
+                    glRotatef(math.sqrt(dx * dx), 0, 0, dx/(dx*dx))
+
+            self.__lastPosX = x
 
 
     def __drawCube(self):
@@ -171,8 +191,8 @@ class LandmarkCubeVisualizer:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     break
+                self.__mouseMove(event)
 
-            glRotatef(1, 0, 0, 3)
             glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
             self.__drawCube()
             self.__drawCenter()
@@ -182,7 +202,7 @@ class LandmarkCubeVisualizer:
             self.__determinedROI()
             self.__drawROI()
             pygame.display.flip()
-            pygame.time.wait(50)
+            pygame.time.wait(100)
 
 
     def start(self):
