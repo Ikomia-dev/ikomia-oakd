@@ -1,5 +1,5 @@
 from utils.compute import to_planar, get_landmark_3d, get_vector_intersection
-from utils.visualize import initOpenGL, startOpenGL
+from utils.visualize import LandmarkCubeVisualizer
 from utils.draw import displayFPS, drawROI
 from pathlib import Path
 import depthai as dai
@@ -72,7 +72,8 @@ for side in ["left", "right"]:
     landmarks_nn.out.link(landmarks_nn_output_stream.input)
 
 
-initOpenGL(face_input_width, face_input_height) # initialize 3D visualizer
+visualizer = LandmarkCubeVisualizer(face_input_width, face_input_height, 1, [(0.107, -0.038, 0.008), (0.109, 0.039, 0.008)])
+visualizer.start()
 
 with dai.Device(pipeline) as device:
     device.startPipeline()
@@ -137,8 +138,7 @@ with dai.Device(pipeline) as device:
             for i in range(5):
                 landmark_spatial_locations.append(get_vector_intersection(spatial_vectors["left"][i], camera_locations["left"], spatial_vectors["right"][i], camera_locations["right"]))
 
-            # Visualize 3D landmarks with OpenGL
-            startOpenGL(landmark_spatial_locations)
+            visualizer.setLandmarks(landmark_spatial_locations)
 
         frame_count += 1
         if cv2.waitKey(1) == ord('q'):
