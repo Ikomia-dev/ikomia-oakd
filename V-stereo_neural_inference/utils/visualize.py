@@ -86,7 +86,7 @@ class LandmarkCubeVisualizer:
                     x_min = x
                 elif(x > x_max):
                     x_max = x
-            fit = [(self.__size > (landmarks[i][0]-(x_min-self.__cameras_positions[0][0])+(-self.__size-(x_min-(x_min-self.__cameras_positions[0][0])))/2+(self.__size-(x_max-(x_min-self.__cameras_positions[0][0])))/2) > -self.__size) and (self.__size > landmarks[i][1] > -self.__size) and (self.__size > landmarks[i][2] > -self.__size) for i in range(len(landmarks))]
+            fit = [(self.__size > (landmarks[i][0]-(x_min-self.__cameras_positions[0][0])+(-self.__size-(x_min-(x_min-self.__cameras_positions[0][0])))/2+(self.__size-(x_max-(x_min-self.__cameras_positions[0][0])))/2) > -self.__size) and (self.__size > landmarks[i][1] > -self.__size) and (self.__size > landmarks[i][2] > -self.__size) and landmarks[i][0] > 0 for i in range(len(landmarks))]
 
             if(np.alltrue(fit)):
                 self.__landmarks = landmarks
@@ -202,7 +202,7 @@ class LandmarkCubeVisualizer:
             self.__determinedROI()
             self.__drawROI()
             pygame.display.flip()
-            pygame.time.wait(100)
+            pygame.time.wait(10)
 
 
     def start(self):
