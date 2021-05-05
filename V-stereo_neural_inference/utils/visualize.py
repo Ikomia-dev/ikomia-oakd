@@ -54,7 +54,7 @@ class LandmarkCubeVisualizer:
 
 
     def setLandmarks(self, landmarks):
-        if(len(landmarks)>4 and landmarks[0][0]>0.0 and landmarks[1][0]>0.0 and landmarks[2][0]>0.0 and landmarks[3][0]>0.0 and landmarks[4][0]>0.0):
+        if(len(landmarks)>0):
             x_min = landmarks[0][0]
             x_max = landmarks[0][0]
             for x,y,z in landmarks:
@@ -62,7 +62,7 @@ class LandmarkCubeVisualizer:
                     x_min = x
                 elif(x > x_max):
                     x_max = x
-            fit = [(self.__size > (landmarks[i][0]-(x_min-self.__cameras_positions[0][0])+(-self.__size-(x_min-(x_min-self.__cameras_positions[0][0])))/2+(self.__size-(x_max-(x_min-self.__cameras_positions[0][0])))/2) > -self.__size) and (self.__size > landmarks[i][1] > -self.__size) and (self.__size > landmarks[i][2] > -self.__size) for i in range(5)]
+            fit = [(self.__size > (landmarks[i][0]-(x_min-self.__cameras_positions[0][0])+(-self.__size-(x_min-(x_min-self.__cameras_positions[0][0])))/2+(self.__size-(x_max-(x_min-self.__cameras_positions[0][0])))/2) > -self.__size) and (self.__size > landmarks[i][1] > -self.__size) and (self.__size > landmarks[i][2] > -self.__size) for i in range(len(landmarks))]
 
             if(np.alltrue(fit)):
                 self.__landmarks = landmarks
@@ -71,7 +71,7 @@ class LandmarkCubeVisualizer:
 
 
     def __centerLandmarks(self):
-        if(len(self.__landmarks)>4):
+        if(len(self.__landmarks)>0):
             self.__centered_landmarks = []
             for i in range(len(self.__landmarks)):
                 self.__centered_landmarks.append([self.__landmarks[i][0]-(self.__x_min-self.__cameras_positions[0][0])+(-self.__size-(self.__x_min-(self.__x_min-self.__cameras_positions[0][0])))/2+(self.__size-(self.__x_max-(self.__x_min-self.__cameras_positions[0][0])))/2, self.__landmarks[i][1], self.__landmarks[i][2]])
