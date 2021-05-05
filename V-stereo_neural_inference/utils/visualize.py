@@ -16,11 +16,13 @@ class LandmarkCubeVisualizer:
         self.colors = colors
         self.pairs = pairs
         
-        self.__verticies = ((size, -size, -size), (size, size, -size), (-size, size, -size), (-size, -size, -size),
-        (size, -size, size), (size, size, size), (-size, -size, size), (-size, size, size))
+        scale = 1.05
+        self.__verticies = ((size*scale, -size*scale, -size*scale), (size*scale, size*scale, -size*scale), (-size*scale, size*scale, -size*scale), (-size*scale, -size*scale, -size*scale),
+        (size*scale, -size*scale, size*scale), (size*scale, size*scale, size*scale), (-size*scale, -size*scale, size*scale), (-size*scale, size*scale, size*scale))
         self.__edges = ((0,1), (0,3), (0,4), (2,1), (2,3), (2,7), (6,3), (6,4), (6,7), (5,1), (5,4), (5,7))
         self.__landmarks = []
         self.__centered_landmarks = []
+        self.__roi = ()
 
 
     def __drawCube(self):
@@ -118,6 +120,40 @@ class LandmarkCubeVisualizer:
                         glVertex3fv(self.__centered_landmarks[landmark_index])
             glEnd()
 
+    
+    def __determinedROI(self):
+        length = len(self.__centered_landmarks)
+        if(length > 0):
+            xmin, xmax = self.__centered_landmarks[0][0], self.__centered_landmarks[0][0]
+            ymin, ymax = self.__centered_landmarks[0][1], self.__centered_landmarks[0][1]
+            zmin, zmax = self.__centered_landmarks[0][2], self.__centered_landmarks[0][2]
+
+            for i in range(1, length):
+                xmin = self.__centered_landmarks[i][0] if(self.__centered_landmarks[i][0] < xmin) else xmin
+                xmax = self.__centered_landmarks[i][0] if(self.__centered_landmarks[i][0] > xmax) else xmax
+                ymin = self.__centered_landmarks[i][1] if(self.__centered_landmarks[i][1] < ymin) else ymin
+                ymax = self.__centered_landmarks[i][1] if(self.__centered_landmarks[i][1] > ymax) else ymax
+                zmin = self.__centered_landmarks[i][2] if(self.__centered_landmarks[i][2] < zmin) else zmin
+                zmax = self.__centered_landmarks[i][2] if(self.__centered_landmarks[i][2] > zmax) else zmax
+
+            xmin, xmax = xmin-self.__size/20, xmax+self.__size/20
+            ymin, ymax = ymin-self.__size/20, ymax+self.__size/20
+            zmin, zmax = zmin-self.__size/20, zmax+self.__size/20
+
+            self.__roi = ((xmax, ymin, zmin), (xmax, ymax, zmin), (xmin, ymax, zmin), (xmin, ymin, zmin),
+            (xmax, ymin, zmax), (xmax, ymax, zmax), (xmin, ymin, zmax), (xmin, ymax, zmax))
+
+
+    def __drawROI(self):
+        if(len(self.__roi) == 8):
+            glLineWidth(0.5)
+            glBegin(GL_LINES)
+            glColor3f(0.6, 0.6, 0.15)
+            for edge in self.__edges:
+                for vertex in edge:
+                    glVertex3fv(self.__roi[vertex])
+            glEnd()
+
 
     def __run(self):
         pygame.init()
@@ -143,6 +179,8 @@ class LandmarkCubeVisualizer:
             self.__centerLandmarks()
             self.__drawLandmarks()
             self.__drawPairs()
+            self.__determinedROI()
+            self.__drawROI()
             pygame.display.flip()
             pygame.time.wait(50)
 
