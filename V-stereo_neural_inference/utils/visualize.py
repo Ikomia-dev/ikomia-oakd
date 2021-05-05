@@ -8,12 +8,13 @@ import pygame
 
 
 class LandmarkCubeVisualizer:
-    def __init__(self, window_width, window_height, size, cameras_positions, colors=[]):
+    def __init__(self, window_width, window_height, size, cameras_positions, colors=[], pairs=[]):
         self.__size = size
         self.__cameras_positions = cameras_positions
         self.__window_width = window_width
         self.__window_height = window_height
         self.colors = colors
+        self.pairs = pairs
         
         self.__verticies = ((size, -size, -size), (size, size, -size), (-size, size, -size), (-size, -size, -size),
         (size, -size, size), (size, size, size), (-size, -size, size), (-size, size, size))
@@ -25,7 +26,7 @@ class LandmarkCubeVisualizer:
     def __drawCube(self):
         glLineWidth(3.0)
         glBegin(GL_LINES)
-        glColor3f(1.0, 0.3, 1.0)
+        glColor3f(0.4, 0.4, 0.4)
         for edge in self.__edges:
             for vertex in edge:
                 glVertex3fv(self.__verticies[vertex])
@@ -89,11 +90,33 @@ class LandmarkCubeVisualizer:
                     glColor3f(self.colors[i][0], self.colors[i][1], self.colors[i][2])
                     glVertex3f(self.__centered_landmarks[i][0], self.__centered_landmarks[i][1], self.__centered_landmarks[i][2])
             else:
-                glColor3f(1.0, 1.0, 0.2)
+                glColor3f(1.0, 1.0, 1.0)
                 for x,y,z in self.__centered_landmarks:
                     glVertex3f(x, y, z)
             glEnd()
             glDisable(GL_POINT_SMOOTH)
+
+
+    def __drawPairs(self):
+        length = len(self.__centered_landmarks)
+        if(length > 0):
+            glLineWidth(2.0)
+            glBegin(GL_LINES)
+            if(length <= len(self.colors)):
+                for pair in self.pairs:
+                    color = [0.0, 0.0, 0.0]
+                    for landmark_index in pair:
+                        for i in range(3):
+                            color[i] += self.colors[landmark_index][i]/(255*len(pair))
+                    glColor3f(color[0], color[1], color[2])
+                    for landmark_index in pair:
+                        glVertex3fv(self.__centered_landmarks[landmark_index])
+            else:
+                glColor3f(0.1, 0.8, 0.8)
+                for pair in self.pairs:
+                    for landmark_index in pair:
+                        glVertex3fv(self.__centered_landmarks[landmark_index])
+            glEnd()
 
 
     def __run(self):
@@ -119,6 +142,7 @@ class LandmarkCubeVisualizer:
             self.__drawCenter()
             self.__centerLandmarks()
             self.__drawLandmarks()
+            self.__drawPairs()
             pygame.display.flip()
             pygame.time.wait(50)
 
