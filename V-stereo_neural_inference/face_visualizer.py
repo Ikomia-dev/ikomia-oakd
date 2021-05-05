@@ -72,7 +72,8 @@ for side in ["left", "right"]:
     landmarks_nn.out.link(landmarks_nn_output_stream.input)
 
 
-visualizer = LandmarkCubeVisualizer(face_input_width, face_input_height, 1, [(0.107, -0.038, 0.008), (0.109, 0.039, 0.008)])
+colors = [(255,0,255), (255,0,255), (255,255,0), (255,255,255), (255,255,255)]
+visualizer = LandmarkCubeVisualizer(face_input_width, face_input_height, 1, [(0.107, -0.038, 0.008), (0.109, 0.039, 0.008)], colors)
 visualizer.start()
 
 with dai.Device(pipeline) as device:
@@ -120,8 +121,8 @@ with dai.Device(pipeline) as device:
 
                 # Draw detections
                 drawROI(frame, (xmin,ymin), (xmax,ymax), color=(0,200,230))
-                for x,y in landmarks:
-                    cv2.circle(frame, (int(x*(xmax-xmin))+xmin,int(y*(ymax-ymin))+ymin), 2, (0,0,255))
+                for i in range(len(landmarks)):
+                    cv2.circle(frame, (int(landmarks[i][0]*(xmax-xmin))+xmin,int(landmarks[i][1]*(ymax-ymin))+ymin), 2, colors[i])
 
                 # Set spatial vectors
                 spatial_landmarks = [get_landmark_3d((x,y)) for x,y in landmarks]

@@ -8,11 +8,12 @@ import pygame
 
 
 class LandmarkCubeVisualizer:
-    def __init__(self, window_width, window_height, size, cameras_positions):
+    def __init__(self, window_width, window_height, size, cameras_positions, colors=[]):
         self.__size = size
         self.__cameras_positions = cameras_positions
         self.__window_width = window_width
         self.__window_height = window_height
+        self.colors = colors
         
         self.__verticies = ((size, -size, -size), (size, size, -size), (-size, size, -size), (-size, -size, -size),
         (size, -size, size), (size, size, size), (-size, -size, size), (-size, size, size))
@@ -78,13 +79,19 @@ class LandmarkCubeVisualizer:
 
 
     def __drawLandmarks(self):
-        if(len(self.__centered_landmarks)>0):
+        length = len(self.__centered_landmarks)
+        if(length > 0):
             glPointSize(5.0)
             glEnable(GL_POINT_SMOOTH)
             glBegin(GL_POINTS)
-            glColor3f(1.0, 1.0, 0.2)
-            for x,y,z in self.__centered_landmarks:
-                glVertex3f(x, y, z)
+            if(length <= len(self.colors)):
+                for i in range(length):
+                    glColor3f(self.colors[i][0], self.colors[i][1], self.colors[i][2])
+                    glVertex3f(self.__centered_landmarks[i][0], self.__centered_landmarks[i][1], self.__centered_landmarks[i][2])
+            else:
+                glColor3f(1.0, 1.0, 0.2)
+                for x,y,z in self.__centered_landmarks:
+                    glVertex3f(x, y, z)
             glEnd()
             glDisable(GL_POINT_SMOOTH)
 
