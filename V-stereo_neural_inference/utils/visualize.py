@@ -208,3 +208,145 @@ class LandmarkCubeVisualizer:
     def start(self):
         t = threading.Thread(target=self.__run)
         t.start()
+
+
+
+class LandmarkDepthVisualizer:
+    def __init__(self, window_width, window_height, dist, cameras_positions, colors=[], pairs=[]):
+        self.dist = dist
+        self.__cameras_positions = cameras_positions
+        self.__window_width = window_width
+        self.__window_height = window_height
+        self.colors = colors
+        self.pairs = pairs
+
+        self.__landmarks = []
+        
+
+    def __drawCenter(self):
+        glLineWidth(0.2)
+        glBegin(GL_LINES)
+
+        # x
+        glColor3f(1, 0, 0)
+        glVertex3f(0, 0, 0)
+        glVertex3f(1/12, 0, 0)
+
+        # y
+        glColor3f(0, 1, 0)
+        glVertex3f(0, 0, 0)
+        glVertex3f(0, 1/12, 0)
+
+        # z
+        glColor3f(0, 0, 1)
+        glVertex3f(0, 0, 0)
+        glVertex3f(0, 0, 1/12)
+
+        glEnd()
+
+
+    def setLandmarks(self, landmarks):
+        if(len(landmarks)>0):
+            self.__x_min = landmarks[0][0]
+            self.__x_max = landmarks[0][0]
+            
+
+            fit = [landmarks[i][0] > self.__cameras_positions[1][0] for i in range(len(landmarks))]
+            if(np.alltrue(fit)):
+                self.__landmarks = landmarks
+                for x,y,z in landmarks:
+                    if(x < self.__x_min):
+                        self.__x_min = x
+                    elif(x > self.__x_max):
+                        self.__x_max = x
+
+
+    def __drawLandmarks(self):
+        length = len(self.__landmarks)
+        if(length > 0):
+            glPointSize(5.0)
+            glEnable(GL_POINT_SMOOTH)
+            glBegin(GL_POINTS)
+            if(length <= len(self.colors)):
+                for i in range(length):
+                    glColor3f(self.colors[i][0], self.colors[i][1], self.colors[i][2])
+                    glVertex3f(self.__landmarks[i][0], self.__landmarks[i][1], self.__landmarks[i][2])
+            else:
+                glColor3f(1.0, 1.0, 1.0)
+                for x,y,z in self.__landmarks:
+                    glVertex3f(x, y, z)
+            glEnd()
+            glDisable(GL_POINT_SMOOTH)
+
+
+    def __drawCameras(self):
+        if(len(self.__cameras_positions) > 0):
+            glPointSize(3.0)
+            glBegin(GL_POINTS)
+            glColor3f(0.0, 0.5, 1.0)
+            for x,y,z in self.__cameras_positions:
+                glVertex3f(x, y, z)
+            glEnd()
+
+
+    def __drawVectors(self):
+        glLineWidth(0.2)
+        glBegin(GL_LINES)
+        glColor3f(0.5, 0.5, 0.5)
+        for i in range(len(self.__landmarks)):
+            for j in range(len(self.__cameras_positions)):
+                glVertex3f(self.__cameras_positions[j][0], self.__cameras_positions[j][1], self.__cameras_positions[j][2])
+                glVertex3f(self.__landmarks[i][0], self.__landmarks[i][1], self.__landmarks[i][2])
+        glEnd()
+
+
+    def __drawPairs(self):
+        length = len(self.__landmarks)
+        if(length > 0):
+            glLineWidth(1.0)
+            glBegin(GL_LINES)
+            if(length <= len(self.colors)):
+                for pair in self.pairs:
+                    color = [0.0, 0.0, 0.0]
+                    for landmark_index in pair:
+                        for i in range(3):
+                            color[i] += self.colors[landmark_index][i]/(255*len(pair))
+                    glColor3f(color[0], color[1], color[2])
+                    for landmark_index in pair:
+                        glVertex3fv(self.__landmarks[landmark_index])
+            else:
+                glColor3f(0.1, 0.8, 0.8)
+                for pair in self.pairs:
+                    for landmark_index in pair:
+                        glVertex3fv(self.__landmarks[landmark_index])
+            glEnd()
+
+
+    def __run(self):
+        pygame.init()
+        display = (self.__window_width,self.__window_height)
+        pygame.display.set_mode(display, DOUBLEBUF|OPENGL)
+
+        gluPerspective(45, (display[0]/display[1]), 0.1, 50.0)
+
+        glTranslatef(-self.dist ,0.0, -self.dist)
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    break
+
+            glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
+            self.__drawCenter()
+            self.__drawCameras()
+            self.__drawLandmarks()
+            self.__drawPairs()
+            self.__drawVectors()
+            pygame.display.flip()
+            pygame.time.wait(10)
+
+
+    def start(self):
+        t = threading.Thread(target=self.__run)
+        t.start()
