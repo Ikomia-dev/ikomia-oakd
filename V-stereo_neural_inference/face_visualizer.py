@@ -1,5 +1,5 @@
 from utils.compute import to_planar, get_landmark_3d, get_vector_intersection
-from utils.visualize import LandmarkCubeVisualizer, LandmarkDepthVisualizer
+from utils.visualize import LandmarksCubeVisualizer, LandmarksDepthVisualizer
 from utils.draw import displayFPS, drawROI
 from pathlib import Path
 import depthai as dai
@@ -76,9 +76,9 @@ for side in ["left", "right"]:
 colors = [(255,255,255), (255,255,255), (0,255,255), (255,0,255), (255,0,255)]
 pairs = [(0,2), (1,2), (3,4)]
 if(visualizeLandmarksCube):
-    visualizer = LandmarkCubeVisualizer(face_input_width, face_input_height, 1, [(0.107, -0.038, 0.008), (0.109, 0.039, 0.008)], colors, pairs)
+    visualizer = LandmarksCubeVisualizer(face_input_width, face_input_height, [camera_locations["left"], camera_locations["right"]], colors=colors, pairs=pairs)
 else:
-    visualizer = LandmarkDepthVisualizer(face_input_width*3, face_input_height, 2, [(0.107, -0.038, 0.008), (0.109, 0.039, 0.008)], colors, pairs)
+    visualizer = LandmarksDepthVisualizer(face_input_width*2, face_input_height, [camera_locations["left"], camera_locations["right"]], colors=colors, pairs=pairs)
 visualizer.start()
 
 with dai.Device(pipeline) as device:
