@@ -1,5 +1,5 @@
 from utils.compute import to_planar, get_landmark_3d, get_vector_intersection
-from utils.visualize import LandmarkCubeVisualizer
+from utils.visualize import LandmarkCubeVisualizer, LandmarkDepthVisualizer
 from utils.draw import displayFPS, drawROI
 from pathlib import Path
 import depthai as dai
@@ -15,6 +15,7 @@ nn_landmarks_path = str(Path(__file__).parent) + "/../models/landmarks.blob"
 camera_locations = dict() # 3D location of cameras (for OAK-D)
 camera_locations["left"] = (0.107, -0.038, 0.008)
 camera_locations["right"] = (0.109, 0.039, 0.008)
+visualizeLandmarksCube = True # define visualization mode (cube with centered face or cameras fields of views)
 
 # Define neural network input sizes
 face_input_width = 300 # also frame width
@@ -74,7 +75,10 @@ for side in ["left", "right"]:
 
 colors = [(255,255,255), (255,255,255), (0,255,255), (255,0,255), (255,0,255)]
 pairs = [(0,2), (1,2), (3,4)]
-visualizer = LandmarkCubeVisualizer(face_input_width, face_input_height, 1, [(0.107, -0.038, 0.008), (0.109, 0.039, 0.008)], colors, pairs)
+if(visualizeLandmarksCube):
+    visualizer = LandmarkCubeVisualizer(face_input_width, face_input_height, 1, [(0.107, -0.038, 0.008), (0.109, 0.039, 0.008)], colors, pairs)
+else:
+    visualizer = LandmarkDepthVisualizer(face_input_width*3, face_input_height, 2, [(0.107, -0.038, 0.008), (0.109, 0.039, 0.008)], colors, pairs)
 visualizer.start()
 
 with dai.Device(pipeline) as device:

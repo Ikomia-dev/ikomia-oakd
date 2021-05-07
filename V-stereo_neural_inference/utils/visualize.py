@@ -221,7 +221,24 @@ class LandmarkDepthVisualizer:
         self.pairs = pairs
 
         self.__landmarks = []
+        self.__lastPosY = 0
         
+
+    def __mouseMove(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 4:
+            glScaled(1.05, 1.05, 1.05)
+        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 5:
+            glScaled(0.95, 0.95, 0.95)
+
+        if event.type == pygame.MOUSEMOTION:
+            x, y = event.pos
+            dy = y - self.__lastPosY
+
+            mouseState = pygame.mouse.get_pressed()
+            if (mouseState[0] and dy!=0):
+                glRotatef(math.sqrt(dy*dy), 1/dy, 0, 0)
+
+            self.__lastPosY = y
 
     def __drawCenter(self):
         glLineWidth(0.2)
@@ -330,12 +347,15 @@ class LandmarkDepthVisualizer:
         gluPerspective(45, (display[0]/display[1]), 0.1, 50.0)
 
         glTranslatef(-self.dist ,0.0, -self.dist)
+        
+        glRotatef(45, 0, 1, 0)
 
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     break
+                self.__mouseMove(event)
 
             glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
             self.__drawCenter()
