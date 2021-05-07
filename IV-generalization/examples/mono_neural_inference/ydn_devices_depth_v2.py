@@ -5,14 +5,14 @@ import cv2
 import sys
 
 # Importing from parent folder
-sys.path.insert(0, str(Path(__file__).parent.parent)) # move to parent path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent)) # move to parent path
 from utils.OakSingleModelRunner import OakSingleModelRunner
 from utils.draw import drawROI, displayFPS
 
 
 def main():
     # Set few parameters
-    nn_path = str(Path(__file__).parent) + "/../../models/devices.blob"
+    nn_path = str(Path(__file__).parent) + "/../../../models/devices.blob"
     labels = [
         "person",         "bicycle",    "car",           "motorbike",     "aeroplane",   "bus",           "train",
         "truck",          "boat",       "traffic light", "fire hydrant",  "stop sign",   "parking meter", "bench",

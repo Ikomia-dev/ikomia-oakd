@@ -4,7 +4,7 @@ import cv2
 import sys
 
 # Importing from parent folder
-sys.path.insert(0, str(Path(__file__).parent.parent)) # move to parent path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent)) # move to parent path
 from utils.OakSingleModelRunner import OakSingleModelRunner
 from utils.compute import updateSpatialCalculatorConfig
 from utils.draw import drawROI, displayFPS
@@ -12,7 +12,7 @@ from utils.draw import drawROI, displayFPS
 
 def main():
     # Set few parameters
-    nn_path = str(Path(__file__).parent) + "/../../models/coronamask.blob"
+    nn_path = str(Path(__file__).parent) + "/../../../models/coronamask.blob"
     labels = ["background", "no mask", "mask", "no mask"]
 
     # Init pipeline

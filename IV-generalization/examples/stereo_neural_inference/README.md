@@ -1,0 +1,1 @@
+Exemples reprennant les programmes du point [V](https://github.com/Ikomia-dev/ikomia-oakd/tree/main/V-stereo_neural_inference) mais en utilisant notre petite bibliothèque.
