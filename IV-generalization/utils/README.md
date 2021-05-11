@@ -1,9 +1,9 @@
 ## Fichiers regroupant des fonctionnalités communes aux programmes.
 <br>
 
-### OakSingleModelRunner
+### OakRunner
 
-classe générique qui peut servir de base à tous nos programmes qui n'utilisent qu'un modèle.
+classe générique qui peut servir de base à tous nos programmes.
 <br><br>
 
 
@@ -12,15 +12,15 @@ classe générique qui peut servir de base à tous nos programmes qui n'utilisen
 Regroupe des fonctions pour traiter les données.
 - Configurer l'entrée d'un [SpatialLocationCalculator](https://docs.luxonis.com/projects/api/en/latest/references/python/#depthai.SpatialLocationCalculator)
 - Convertir un tableau multidimensionnel en tableau unidimensionnel
-- Récupérer les coordonnées 3D de points d'intérêts à partir des 2D
-- Calculer les points d'intersections de 2 vecteurs 3D
+- Récupérer des coordonnées vectorielles 3D à partir d'un point 2D
+- Calculer le point d'intersection de 2 vecteurs 3D
 <br><br>
 
 
 ### draw
 
 Regroupe des fonctions pour écrire/dessiner sur une image.
-- Points d'intérêts avec label, confience et coordonnées spatiales
+- Points d'intérêts avec label, confiance et coordonnées spatiales
 - Nombre d'images par seconde
 <br><br>
 
