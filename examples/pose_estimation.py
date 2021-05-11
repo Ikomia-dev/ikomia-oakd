@@ -1,5 +1,5 @@
 from utils.pose import getKeypoints, getPersonwiseKeypoints, getValidPairs
-from utils.OakSingleModelRunner import OakSingleModelRunner
+from utils.OakRunner import OakRunner
 from utils.draw import displayFPS
 from pathlib import Path
 import depthai as dai
@@ -23,10 +23,10 @@ nPoints = 18
 
 # Process function
 def process(runner):
-    frame_width = runner.middle_cam.getPreviewWidth()
-    frame_height = runner.middle_cam.getPreviewHeight()
-    frame = runner.middle_cam_output_queue.get().getCvFrame()
-    nn_current_output = runner.nn_output_queue.get()
+    frame_width = 456
+    frame_height = 256
+    frame = runner.output_queues["middle_cam"].get().getCvFrame()
+    nn_current_output = runner.output_queues["nn"].get()
     
     heatmaps = np.array(nn_current_output.getLayerFp16('Mconv7_stage2_L2')).reshape((1, 19, 32, 57)).astype('float32')
     pafs = np.array(nn_current_output.getLayerFp16('Mconv7_stage2_L1')).reshape((1, 38, 32, 57)).astype('float32')
@@ -71,15 +71,17 @@ def process(runner):
     cv2.imshow("output", frame)
 
 
-runner = OakSingleModelRunner() 
+runner = OakRunner() 
 
 # Configure middle camera and init output streams
 runner.setMiddleCamera(frame_width=456, frame_height=256)
-runner.middle_cam.setInterleaved(False)
-runner.middle_cam.setFps(8)
+middle_cam = runner.getMiddleCamera()
+middle_cam.setInterleaved(False)
+middle_cam.setFps(8)
 
 # Configure neural network model and init input / output streams
-runner.setNeuralNetworkModel(path=str(Path(__file__).parent) + "/../models/pose_estimation.blob")
+runner.addNeuralNetworkModel(stream_name="nn", path=str(Path(__file__).parent) + "/../models/pose_estimation.blob", handle_mono_depth=False)
+middle_cam.preview.link(runner.neural_networks["nn"].input)
 
 # Run the loop that call the process function
-runner.run(process=process, middle_cam_queue_size=1, nn_queue_size=1)
+runner.run(process=process)
