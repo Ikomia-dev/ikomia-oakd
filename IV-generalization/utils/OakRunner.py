@@ -118,7 +118,7 @@ class OakRunner:
             self.__right_cam.out.link(self.__stereo.right)
 
 
-    def __setSpatialLocationCalculator(self, stream_name):
+    def __setSpatialLocationCalculator(self, stream_name, slc_input_queue, slc_block_input, slc_output_queue, slc_block_output):
         # Configure spatial location calculator
         self.__spatial_location_calculator = self.__pipeline.createSpatialLocationCalculator()
         self.__stereo.depth.link(self.__spatial_location_calculator.inputDepth)
@@ -130,6 +130,10 @@ class OakRunner:
         spatial_calculator_output_stream = self.__pipeline.createXLinkOut()
         spatial_calculator_output_stream.setStreamName(stream_name)
         self.__spatial_location_calculator.out.link(spatial_calculator_output_stream.input)
+
+        self.__prepareStreamQueue(stream_name, slc_input_queue, slc_block_input, self.__input_queue_arguments)
+        self.__prepareStreamQueue(stream_name, slc_output_queue, slc_block_output, self.__output_queue_arguments)
+        self.__spatial_location_calculator_stream_name = stream_name
 
 
     def __setModel(self, stream_name, path, input_queue_size, block_input_queue, output_queue_size, block_output_queue):
@@ -149,18 +153,18 @@ class OakRunner:
         self.neural_networks[stream_name].out.link(nn_output_stream.input)
 
 
-    def addNeuralNetworkModel(self, stream_name, path, input_queue_size=1, block_input_queue=False, output_queue_size=1, block_output_queue=False, handle_mono_depth=True, spatial_calculator_stream_name="slc"):
+    def addNeuralNetworkModel(self, stream_name, path, input_queue_size=1, block_input_queue=False, output_queue_size=1, block_output_queue=False, handle_mono_depth=True, slc_stream_name="slc", slc_input_queue=1, slc_block_input=False, slc_output_queue=1, slc_block_output=False):
         self.neural_networks[stream_name] = self.__pipeline.createNeuralNetwork()
         self.__setModel(stream_name, path, input_queue_size, block_input_queue, output_queue_size, block_output_queue)
         if(handle_mono_depth):
             if(self.__stereo is None): # Warn user
                 print("To link the mono depth you should configure it (call setMonoDepth), skipped..")
-            elif(self.spatial_location_calculator is None): # If necessary, init the spatial location calculator
-                self.__setSpatialLocationCalculator(spatial_calculator_stream_name)
+            elif(self.__spatial_location_calculator is None): # If necessary, init the spatial location calculator
+                self.__setSpatialLocationCalculator(slc_stream_name, slc_input_queue, slc_block_input, slc_output_queue, slc_block_output)
                 print("There was no spatial_location_calculator, it has been set.")
 
 
-    def addMobileNetDetectionModel(self, stream_name, path, output_queue_size=1, block_output_queue=False, treshold=0.5, handle_mono_depth=True):
+    def addMobileNetDetectionModel(self, stream_name, path, input_queue_size=1, block_input_queue=False, output_queue_size=1, block_output_queue=False, treshold=0.5, handle_mono_depth=True):
         if(handle_mono_depth and self.__stereo is not None):
             self.neural_networks[stream_name] = self.__pipeline.createMobileNetSpatialDetectionNetwork()
             self.__stereo.depth.link(self.neural_networks[stream_name].inputDepth)
@@ -172,7 +176,7 @@ class OakRunner:
         self.__setModel(stream_name, path, input_queue_size, block_input_queue, output_queue_size, block_output_queue)
 
 
-    def addYoloDetectionModel(self, stream_name, path, num_classes, coordinate_size, anchors, anchor_masks, output_queue_size=1, block_output_queue=False, treshold=0.5, handle_mono_depth=True):
+    def addYoloDetectionModel(self, stream_name, path, num_classes, coordinate_size, anchors, anchor_masks, input_queue_size=1, block_input_queue=False, output_queue_size=1, block_output_queue=False, treshold=0.5, handle_mono_depth=True):
         if(handle_mono_depth and self.__stereo is not None):
             self.neural_networks[stream_name] = self.__pipeline.createYoloSpatialDetectionNetwork()
             self.__stereo.depth.link(self.neural_networks[stream_name].inputDepth)

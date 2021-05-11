@@ -5,9 +5,9 @@ import sys
 
 # Importing from parent folder
 sys.path.insert(0, str(Path(__file__).parent.parent.parent)) # move to parent path
-from utils.OakSingleModelRunner import OakSingleModelRunner
 from utils.compute import updateSpatialCalculatorConfig
 from utils.draw import drawROI, displayFPS
+from utils.OakRunner import OakRunner
 
 
 def main():
@@ -16,31 +16,35 @@ def main():
     labels = ["background", "no mask", "mask", "no mask"]
 
     # Init pipeline
-    runner = OakSingleModelRunner() 
+    runner = OakRunner() 
 
     # Configure middle camera and init output streams
-    runner.setMiddleCamera(frame_width=300, frame_height=300)
-    runner.middle_cam.setInterleaved(False)
-    runner.middle_cam.setFps(20)
+    runner.setMiddleCamera(frame_width=300, frame_height=300, stream_name="middle_cam", output_queue_size=4, block_output_queue=False)
+    middle_cam = runner.getMiddleCamera()
+    middle_cam.setInterleaved(False)
+    middle_cam.setFps(20)
 
     # Configure stereo depth
-    runner.setDepth()
-    runner.stereo.setOutputDepth(True)
-    runner.stereo.setConfidenceThreshold(255)
+    runner.setMonoDepth()
+    stereo = runner.getStereo()
+    stereo.setOutputDepth(True)
+    stereo.setConfidenceThreshold(255)
 
     # Configure neural network model and init input / output streams
-    runner.setNeuralNetworkModel(path=nn_path)
+    runner.addNeuralNetworkModel(stream_name="nn", path=nn_path, output_queue_size=4, handle_mono_depth=True)
+    middle_cam.preview.link(runner.neural_networks["nn"].input)
     runner.labels = labels
-    runner.spatial_location_calculator.setWaitForConfigInput(True)
+    slc = runner.getSpatialLocationCalculator()
+    slc.setWaitForConfigInput(True)
 
     # Run the loop that call the process function
-    runner.run(process=process, middle_cam_queue_size=4, nn_queue_size=4)
+    runner.run(process=process)
 
 
 # Process function
 def process(runner):
-    frame = runner.middle_cam_output_queue.get().getCvFrame()
-    tensor = runner.nn_output_queue.get().getLayerFp16("DetectionOutput")
+    frame = runner.output_queues["middle_cam"].get().getCvFrame()
+    tensor = runner.output_queues["nn"].get().getLayerFp16("DetectionOutput")
     
     keeped_roi = []
     for i in range(100): # There is 100 detections, not all of them are relevant
@@ -54,8 +58,8 @@ def process(runner):
             updateSpatialCalculatorConfig(spatial_calculator_config, dai.Point2f(left, top), dai.Point2f(right, bottom))
 
         # Draw infos
-        runner.spatial_calculator_input_queue.send(spatial_calculator_config)
-        spatial_data = runner.spatial_calculator_output_queue.get().getSpatialLocations()
+        runner.input_queues["slc"].send(spatial_calculator_config)
+        spatial_data = runner.output_queues["slc"].get().getSpatialLocations()
         for i in range(len(keeped_roi)):
             drawROI(frame, (keeped_roi[i][3],keeped_roi[i][4]), (keeped_roi[i][5],keeped_roi[i][6]), label=runner.labels[int(keeped_roi[i][1])], confidence=keeped_roi[i][2], spatialCoordinates=spatial_data[i].spatialCoordinates)
 

@@ -6,8 +6,8 @@ import sys
 
 # Importing from parent folder
 sys.path.insert(0, str(Path(__file__).parent.parent.parent)) # move to parent path
-from utils.OakSingleModelRunner import OakSingleModelRunner
 from utils.draw import drawROI, displayFPS
+from utils.OakRunner import OakRunner
 
 
 def main():
@@ -33,33 +33,36 @@ def main():
 
 
     # Init pipeline
-    runner = OakSingleModelRunner() 
+    runner = OakRunner()
 
     # Configure middle camera and init output streams
-    runner.setMiddleCamera(frame_width=416, frame_height=416)
-    runner.middle_cam.setInterleaved(False)
-    runner.middle_cam.setFps(20)
+    runner.setMiddleCamera(frame_width=416, frame_height=416, stream_name="middle_cam", output_queue_size=4, block_output_queue=False)
+    middle_cam = runner.getMiddleCamera()
+    middle_cam.setInterleaved(False)
+    middle_cam.setFps(20)
 
     # Configure stereo depth
-    runner.setDepth()
-    runner.stereo.setOutputDepth(True)
-    runner.stereo.setConfidenceThreshold(255)
+    runner.setMonoDepth()
+    stereo = runner.getStereo()
+    stereo.setOutputDepth(True)
+    stereo.setConfidenceThreshold(255)
 
     # Configure neural network model and init input / output streams
-    runner.setYoloDetectionModel(path=nn_path, num_classes=len(labels), coordinate_size=coordinate_size, anchors=anchors, anchor_masks=anchor_masks)
+    runner.addYoloDetectionModel(stream_name="nn", path=nn_path, num_classes=len(labels), coordinate_size=coordinate_size, anchors=anchors, anchor_masks=anchor_masks, output_queue_size=4, handle_mono_depth=True)
     runner.labels = labels
-    runner.nn.setIouThreshold(0.5)
-    runner.nn.setDepthLowerThreshold(250)
-    runner.nn.setDepthUpperThreshold(5000)
+    runner.neural_networks["nn"].setIouThreshold(0.5)
+    runner.neural_networks["nn"].setDepthLowerThreshold(250)
+    runner.neural_networks["nn"].setDepthUpperThreshold(5000)
+    middle_cam.preview.link(runner.neural_networks["nn"].input)
 
     # Run the loop that call the process function
-    runner.run(process=process, middle_cam_queue_size=4, nn_queue_size=4)
+    runner.run(process=process)
 
 
 # Process function
 def process(runner):
-    frame = runner.middle_cam_output_queue.get().getCvFrame()
-    detections = runner.nn_output_queue.get().detections
+    frame = runner.output_queues["middle_cam"].get().getCvFrame()
+    detections = runner.output_queues["nn"].get().detections
 
     for detection in detections:
         drawROI(frame, (detection.xmin,detection.ymin), (detection.xmax,detection.ymax), label=runner.labels[detection.label], confidence=detection.confidence, spatialCoordinates=detection.spatialCoordinates)
