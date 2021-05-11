@@ -42,14 +42,14 @@ Le fonctionnement général est le suivant :
 pipeline = dai.Pipeline()
 
 # L'utiliser pour récupérer et configurer une caméra
-camRgb = pipeline.createColorCamera()
+camRgb = pipeline.create(dai.node.ColorCamera)
 camRgb.setPreviewSize(800, 540) # Dimension du flux vidéo récupéré
 camRgb.setBoardSocket(dai.CameraBoardSocket.RGB) # Socket à utiliser
 camRgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
 camRgb.setColorOrder(dai.ColorCameraProperties.ColorOrder.RGB)
 
 # Instancier la sortie du pipeline pour la lier à celle de la caméra
-xoutRgb = pipeline.createXLinkOut() # Créé un flux de sortie au pipeline
+xoutRgb = pipeline.create(dai.node.XLinkOut) # Créé un flux de sortie au pipeline
 xoutRgb.setStreamName("rgb") # Nom du flux de sortie associé
 camRgb.preview.link(xoutRgb.input) # Lie le flux vidéo et le flux de sortie
 

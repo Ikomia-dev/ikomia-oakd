@@ -18,7 +18,7 @@ L'instance d'objet ImgDetections contient une liste d'instances [ImgDetection](h
 
 ```py
 # Configurer le réseau
-nn = pipeline.createYoloDetectionNetwork()
+nn = pipeline.create(dai.node.YoloDetectionNetwork)
 nn.setConfidenceThreshold(0.5) # Conserve se qui est détecté avec au moins 50% d'assurance
 nn.setBlobPath("chemin/vers/le.blob")
 nn.setNumClasses(80) # 80 labels différents
@@ -28,7 +28,7 @@ nn.setAnchorMasks({"side26": np.array([1, 2, 3]), "side13": np.array([3, 4, 5])}
 nn.setIouThreshold(0.5)
 
 # Initier un accès à la sortie
-nn_output_stream = pipeline.createXLinkOut()
+nn_output_stream = pipeline.create(dai.node.XLinkOut)
 nn_output_stream.setStreamName("nn")
 nn.out.link(nn_output_stream.input)
 detection_queue = device.getOutputQueue(name="nn", maxSize=4, blocking=False)
@@ -55,7 +55,7 @@ Au niveau de la structure de la sortie du modèle, il s'agit toujours de l'attri
 L'objet [YoloSpatialDetectionNetwork](https://docs.luxonis.com/projects/api/en/latest/references/python/#depthai.YoloSpatialDetectionNetwork) fait implicitement le travail d'un calculateur de localisation spatiale ([SpatialLocationCalculator](https://docs.luxonis.com/projects/api/en/latest/references/python/#depthai.SpatialLocationCalculator)), il nous évite donc la pénible tâche du calcule des localisations spatiales.
 ```py
 # Configurer le réseau de neurones
-nn = pipeline.createYoloSpatialDetectionNetwork()
+nn = pipeline.create(dai.node.YoloSpatialDetectionNetwork)
 nn.setConfidenceThreshold(0.5) # Conserve se qui est détecté avec au moins 50% d'assurance
 nn.setBlobPath("chemin/vers/le.blob")
 nn.setNumClasses(80) # 80 labels différents
@@ -68,7 +68,7 @@ nn.setIouThreshold(0.5)
 depth.depth.link(nn.inputDepth)
 
 # Initier un accès à la sortie
-nn_output_stream = pipeline.createXLinkOut()
+nn_output_stream = pipeline.create(dai.node.XLinkOut)
 nn_output_stream.setStreamName("nn")
 nn.out.link(nn_output_stream.input)
 detection_queue = device.getOutputQueue(name="nn", maxSize=4, blocking=False)

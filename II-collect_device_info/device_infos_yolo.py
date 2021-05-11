@@ -56,18 +56,18 @@ frame_height = 416
 pipeline = dai.Pipeline()
 
 # Define a source - color camera (RGB)
-camRgb = pipeline.createColorCamera()
+camRgb = pipeline.create(dai.node.ColorCamera)
 camRgb.setPreviewSize(frame_width, frame_height)
 camRgb.setInterleaved(False)
 camRgb.setFps(fps_limit)
 
 # Define system logger source
-sys_logger = pipeline.createSystemLogger()
+sys_logger = pipeline.create(dai.node.SystemLogger)
 sys_logger.setRate(logger_freq)
 
 
 # network specific settings
-detectionNetwork = pipeline.createYoloDetectionNetwork()
+detectionNetwork = pipeline.create(dai.node.YoloDetectionNetwork)
 detectionNetwork.setConfidenceThreshold(0.5)
 detectionNetwork.setNumClasses(80)
 detectionNetwork.setCoordinateSize(4)
@@ -83,19 +83,19 @@ camRgb.preview.link(detectionNetwork.input)
 
 
 # Create outputs
-xoutRgb = pipeline.createXLinkOut()
+xoutRgb = pipeline.create(dai.node.XLinkOut)
 xoutRgb.setStreamName("rgb")
 if syncNN:
     detectionNetwork.passthrough.link(xoutRgb.input)
 else:
     camRgb.preview.link(xoutRgb.input)
 
-nnOut = pipeline.createXLinkOut()
+nnOut = pipeline.create(dai.node.XLinkOut)
 nnOut.setStreamName("detections")
 detectionNetwork.out.link(nnOut.input)
 
 # Create outputs
-linkOut = pipeline.createXLinkOut()
+linkOut = pipeline.create(dai.node.XLinkOut)
 linkOut.setStreamName("sysinfo")
 sys_logger.out.link(linkOut.input)
 

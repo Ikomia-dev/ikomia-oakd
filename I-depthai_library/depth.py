@@ -6,15 +6,15 @@ import numpy as np
 pipeline = dai.Pipeline()
 
 # Define a source - two mono (grayscale) cameras
-left = pipeline.createMonoCamera()
+left = pipeline.create(dai.node.MonoCamera)
 left.setResolution(dai.MonoCameraProperties.SensorResolution.THE_400_P)
 left.setBoardSocket(dai.CameraBoardSocket.LEFT)
-right = pipeline.createMonoCamera()
+right = pipeline.create(dai.node.MonoCamera)
 right.setResolution(dai.MonoCameraProperties.SensorResolution.THE_400_P)
 right.setBoardSocket(dai.CameraBoardSocket.RIGHT)
 
 # Create a node that will produce the depth map (using disparity output as it's easier to visualize depth this way)
-depth = pipeline.createStereoDepth()
+depth = pipeline.create(dai.node.StereoDepth)
 depth.setConfidenceThreshold(200)
 median = dai.StereoDepthProperties.MedianFilter.KERNEL_7x7 # For depth filtering
 depth.setMedianFilter(median)
@@ -27,7 +27,7 @@ left.out.link(depth.left)
 right.out.link(depth.right)
 
 # Create output
-xout = pipeline.createXLinkOut()
+xout = pipeline.create(dai.node.XLinkOut)
 xout.setStreamName("disparity")
 depth.disparity.link(xout.input)
 

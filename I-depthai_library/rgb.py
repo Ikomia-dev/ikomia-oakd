@@ -5,14 +5,14 @@ import depthai as dai
 pipeline = dai.Pipeline()
 
 # Define a source - color camera (RGB)
-camRgb = pipeline.createColorCamera()
+camRgb = pipeline.create(dai.node.ColorCamera)
 camRgb.setPreviewSize(800, 540)
 camRgb.setBoardSocket(dai.CameraBoardSocket.RGB) # Specify which board socket to use
 camRgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
 camRgb.setColorOrder(dai.ColorCameraProperties.ColorOrder.RGB)
 
 # Create output
-xoutRgb = pipeline.createXLinkOut()
+xoutRgb = pipeline.create(dai.node.XLinkOut)
 xoutRgb.setStreamName("rgb")
 camRgb.preview.link(xoutRgb.input) # Link video stream to output
 

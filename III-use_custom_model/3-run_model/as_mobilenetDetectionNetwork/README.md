@@ -18,11 +18,11 @@ L'instance d'objet ImgDetections contient une liste d'instances [ImgDetection](h
 
 ```py
 # Configurer le réseau
-nn = pipeline.createMobileNetDetectionNetwork()
+nn = pipeline.create(dai.node.MobileNetDetectionNetwork)
 nn.setBlobPath("chemin/vers/le.blob")
 
 # Initier un accès à la sortie
-nn_output_stream = pipeline.createXLinkOut()
+nn_output_stream = pipeline.create(dai.node.XLinkOut)
 nn_output_stream.setStreamName("nn")
 nn.out.link(nn_output_stream.input)
 detection_queue = device.getOutputQueue(name="nn", maxSize=4, blocking=False)
@@ -49,7 +49,7 @@ Au niveau de la structure de la sortie du modèle, il s'agit toujours de l'attri
 L'objet [MobileNetSpatialDetectionNetwork](https://docs.luxonis.com/projects/api/en/latest/references/python/#depthai.MobileNetSpatialDetectionNetwork) fait implicitement le travail d'un calculateur de localisation spatiale ([SpatialLocationCalculator](https://docs.luxonis.com/projects/api/en/latest/references/python/#depthai.SpatialLocationCalculator)), il nous évite donc la pénible tâche du calcule des localisations spatiales.
 ```py
 # Configurer le réseau de neurones
-nn = pipeline.createMobileNetSpatialDetectionNetwork()
+nn = pipeline.create(dai.node.MobileNetSpatialDetectionNetwork)
 nn.setConfidenceThreshold(0.5) # Conserve se qui est détecté avec au moins 50% d'assurance
 nn.setBlobPath("chemin/vers/le.blob")
 
@@ -57,7 +57,7 @@ nn.setBlobPath("chemin/vers/le.blob")
 depth.depth.link(nn.inputDepth)
 
 # Initier un accès à la sortie
-nn_output_stream = pipeline.createXLinkOut()
+nn_output_stream = pipeline.create(dai.node.XLinkOut)
 nn_output_stream.setStreamName("nn")
 nn.out.link(nn_output_stream.input)
 detection_queue = device.getOutputQueue(name="nn", maxSize=4, blocking=False)

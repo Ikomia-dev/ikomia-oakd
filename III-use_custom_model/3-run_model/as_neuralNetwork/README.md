@@ -22,11 +22,11 @@ En l'occurence, la sortie correspond à des détections, cependant, il est tout 
 
 ```py
 # Configurer le réseau
-nn = pipeline.createNeuralNetwork()
+nn = pipeline.create(dai.node.NeuralNetwork)
 nn.setBlobPath("chemin/vers/le.blob")
 
 # Initier un accès à la sortie
-nn_output_stream = pipeline.createXLinkOut()
+nn_output_stream = pipeline.create(dai.node.XLinkOut)
 nn_output_stream.setStreamName("nn")
 nn.out.link(nn_output_stream.input)
 detection_queue = device.getOutputQueue(name="nn", maxSize=4, blocking=False)
@@ -59,17 +59,17 @@ Pour utiliser la profondeur, il suffit de passer les zones d'intérêts (ROI) da
 
 ```py
 # Configurer le calculateur de localisation spatiale
-spatial_location_calculator = pipeline.createSpatialLocationCalculator()
+spatial_location_calculator = pipeline.create(dai.node.SpatialLocationCalculator)
 spatial_location_calculator.setWaitForConfigInput(True)
 
 # Lier le calculateur à une instance d'objet StereoDepth auquelle les caméras lattérales ont été liées.
 depth.depth.link(spatial_location_calculator.inputDepth) 
 
 # Créer un lien à l'entrée et à la sortie du calculateur de localisation spatiale
-spatial_data_output_stream = pipeline.createXLinkOut()
+spatial_data_output_stream = pipeline.create(dai.node.XLinkOut)
 spatial_data_output_stream.setStreamName("spatialData")
 spatial_location_calculator.out.link(spatial_data_output_stream.input)
-spatial_config_input_stream = pipeline.createXLinkIn()
+spatial_config_input_stream = pipeline.create(dai.node.XLinkIn)
 spatial_config_input_stream.setStreamName("spatialCalcConfig")
 spatial_config_input_stream.out.link(spatial_location_calculator.inputConfig)
 

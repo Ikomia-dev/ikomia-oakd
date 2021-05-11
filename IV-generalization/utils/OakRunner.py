@@ -41,11 +41,11 @@ class OakRunner:
 
     def setMiddleCamera(self, frame_width, frame_height, stream_name="middle_cam", output_queue_size=1, block_output_queue=False):
         # Needed configuration
-        self.__middle_cam = self.__pipeline.createColorCamera()
+        self.__middle_cam = self.__pipeline.create(dai.node.ColorCamera)
         self.__middle_cam.setPreviewSize(frame_width, frame_height)
 
         # Set output stream
-        middle_cam_output_stream = self.__pipeline.createXLinkOut()
+        middle_cam_output_stream = self.__pipeline.create(dai.node.XLinkOut)
         middle_cam_output_stream.setStreamName(stream_name)
         self.__middle_cam.preview.link(middle_cam_output_stream.input)
         self.__middle_cam_stream_name = stream_name
@@ -55,17 +55,17 @@ class OakRunner:
 
     def setRightCamera(self, frame_width, frame_height, sensor_resolution=dai.MonoCameraProperties.SensorResolution.THE_720_P, stream_name="right_cam", output_queue_size=1, block_output_queue=False):
         # Init right cam
-        self.__right_cam = self.__pipeline.createMonoCamera()
+        self.__right_cam = self.__pipeline.create(dai.node.MonoCamera)
         self.__right_cam.setResolution(sensor_resolution)
         self.__right_cam.setBoardSocket(dai.CameraBoardSocket.RIGHT)
 
         # Convert image output into proper sized output
-        self.__right_cam_manip = self.__pipeline.createImageManip()
+        self.__right_cam_manip = self.__pipeline.create(dai.node.ImageManip)
         self.__right_cam_manip.initialConfig.setResize(frame_width, frame_height)
         self.__right_cam.out.link(self.__right_cam_manip.inputImage)
 
         # Set output stream
-        right_cam_manip_output_stream = self.__pipeline.createXLinkOut()
+        right_cam_manip_output_stream = self.__pipeline.create(dai.node.XLinkOut)
         right_cam_manip_output_stream.setStreamName(stream_name)
         self.__right_cam_manip.out.link(right_cam_manip_output_stream.input)
 
@@ -76,17 +76,17 @@ class OakRunner:
 
     def setLeftCamera(self, frame_width, frame_height, sensor_resolution=dai.MonoCameraProperties.SensorResolution.THE_720_P, stream_name="left_cam", output_queue_size=1, block_output_queue=False):
         # Init left cam
-        self.__left_cam = self.__pipeline.createMonoCamera()
+        self.__left_cam = self.__pipeline.create(dai.node.MonoCamera)
         self.__left_cam.setResolution(sensor_resolution)
         self.__left_cam.setBoardSocket(dai.CameraBoardSocket.LEFT)
 
         # Convert image output into proper sized output
-        self.__left_cam_manip = self.__pipeline.createImageManip()
+        self.__left_cam_manip = self.__pipeline.create(dai.node.ImageManip)
         self.__left_cam_manip.initialConfig.setResize(frame_width, frame_height)
         self.__left_cam.out.link(self.__left_cam_manip.inputImage)
         
         # Set output stream
-        left_cam_manip_output_stream = self.__pipeline.createXLinkOut()
+        left_cam_manip_output_stream = self.__pipeline.create(dai.node.XLinkOut)
         left_cam_manip_output_stream.setStreamName(stream_name)
         self.__left_cam_manip.out.link(left_cam_manip_output_stream.input)
 
@@ -104,30 +104,30 @@ class OakRunner:
         else:
             # Configure cameras
             if(self.__left_cam is None):
-                self.__left_cam = self.__pipeline.createMonoCamera()
+                self.__left_cam = self.__pipeline.create(dai.node.MonoCamera)
                 self.__left_cam.setResolution(sensor_resolution)
                 self.__left_cam.setBoardSocket(dai.CameraBoardSocket.LEFT)
             if(self.__right_cam is None):
-                self.__right_cam = self.__pipeline.createMonoCamera()
+                self.__right_cam = self.__pipeline.create(dai.node.MonoCamera)
                 self.__right_cam.setResolution(sensor_resolution)
                 self.__right_cam.setBoardSocket(dai.CameraBoardSocket.RIGHT)
 
             # Set depth
-            self.__stereo = self.__pipeline.createStereoDepth()
+            self.__stereo = self.__pipeline.create(dai.node.StereoDepth)
             self.__left_cam.out.link(self.__stereo.left)
             self.__right_cam.out.link(self.__stereo.right)
 
 
     def __setSpatialLocationCalculator(self, stream_name, slc_input_queue, slc_block_input, slc_output_queue, slc_block_output):
         # Configure spatial location calculator
-        self.__spatial_location_calculator = self.__pipeline.createSpatialLocationCalculator()
+        self.__spatial_location_calculator = self.__pipeline.create(dai.node.SpatialLocationCalculator)
         self.__stereo.depth.link(self.__spatial_location_calculator.inputDepth)
 
         # Set spatial location calculator input/output stream
-        spatial_calculator_input_stream = self.__pipeline.createXLinkIn()
+        spatial_calculator_input_stream = self.__pipeline.create(dai.node.XLinkIn)
         spatial_calculator_input_stream.setStreamName(stream_name)
         spatial_calculator_input_stream.out.link(self.__spatial_location_calculator.inputConfig)
-        spatial_calculator_output_stream = self.__pipeline.createXLinkOut()
+        spatial_calculator_output_stream = self.__pipeline.create(dai.node.XLinkOut)
         spatial_calculator_output_stream.setStreamName(stream_name)
         self.__spatial_location_calculator.out.link(spatial_calculator_output_stream.input)
 
@@ -143,18 +143,18 @@ class OakRunner:
         self.__prepareStreamQueue(stream_name, output_queue_size, block_output_queue, self.__output_queue_arguments)
 
         # Set intput stream
-        nn_input_stream = self.__pipeline.createXLinkIn()
+        nn_input_stream = self.__pipeline.create(dai.node.XLinkIn)
         nn_input_stream.setStreamName(stream_name)
         nn_input_stream.out.link(self.neural_networks[stream_name].input)
 
         # Set output stream
-        nn_output_stream = self.__pipeline.createXLinkOut()
+        nn_output_stream = self.__pipeline.create(dai.node.XLinkOut)
         nn_output_stream.setStreamName(stream_name)
         self.neural_networks[stream_name].out.link(nn_output_stream.input)
 
 
     def addNeuralNetworkModel(self, stream_name, path, input_queue_size=1, block_input_queue=False, output_queue_size=1, block_output_queue=False, handle_mono_depth=True, slc_stream_name="slc", slc_input_queue=1, slc_block_input=False, slc_output_queue=1, slc_block_output=False):
-        self.neural_networks[stream_name] = self.__pipeline.createNeuralNetwork()
+        self.neural_networks[stream_name] = self.__pipeline.create(dai.node.NeuralNetwork)
         self.__setModel(stream_name, path, input_queue_size, block_input_queue, output_queue_size, block_output_queue)
         if(handle_mono_depth):
             if(self.__stereo is None): # Warn user
@@ -166,24 +166,24 @@ class OakRunner:
 
     def addMobileNetDetectionModel(self, stream_name, path, input_queue_size=1, block_input_queue=False, output_queue_size=1, block_output_queue=False, treshold=0.5, handle_mono_depth=True):
         if(handle_mono_depth and self.__stereo is not None):
-            self.neural_networks[stream_name] = self.__pipeline.createMobileNetSpatialDetectionNetwork()
+            self.neural_networks[stream_name] = self.__pipeline.create(dai.node.MobileNetSpatialDetectionNetwork)
             self.__stereo.depth.link(self.neural_networks[stream_name].inputDepth)
         else:
             if(handle_mono_depth): # Warn user
                 print("To link the mono depth you should configure it (call setMonoDepth), skipped..")
-            self.neural_networks[stream_name] = self.__pipeline.createMobileNetDetectionNetwork()
+            self.neural_networks[stream_name] = self.__pipeline.create(dai.node.MobileNetDetectionNetwork)
         self.neural_networks[stream_name].setConfidenceThreshold(treshold)
         self.__setModel(stream_name, path, input_queue_size, block_input_queue, output_queue_size, block_output_queue)
 
 
     def addYoloDetectionModel(self, stream_name, path, num_classes, coordinate_size, anchors, anchor_masks, input_queue_size=1, block_input_queue=False, output_queue_size=1, block_output_queue=False, treshold=0.5, handle_mono_depth=True):
         if(handle_mono_depth and self.__stereo is not None):
-            self.neural_networks[stream_name] = self.__pipeline.createYoloSpatialDetectionNetwork()
+            self.neural_networks[stream_name] = self.__pipeline.create(dai.node.YoloSpatialDetectionNetwork)
             self.__stereo.depth.link(self.neural_networks[stream_name].inputDepth)
         else:
             if(handle_mono_depth): # Warn user
                 print("To link the mono depth you should configure it (call setMonoDepth), skipped..")
-            self.neural_networks[stream_name] = self.__pipeline.createYoloDetectionNetwork()
+            self.neural_networks[stream_name] = self.__pipeline.create(dai.node.YoloDetectionNetwork)
         self.neural_networks[stream_name].setConfidenceThreshold(treshold)
         self.neural_networks[stream_name].setNumClasses(num_classes)
         self.neural_networks[stream_name].setCoordinateSize(coordinate_size)
