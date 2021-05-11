@@ -15,32 +15,33 @@ J'ai créé une classe générique qui peut servir de base à nos programmes, l'
 Cela permet d'écrire un programme en très peu de lignes, voici par exemple, un programme équivalent au [mdn_coronamask](https://github.com/Ikomia-dev/ikomia-oakd/blob/main/III-use_custom_model/3-run_model/as_mobilenetDetectionNetwork/mdn_coronamask.py) du point [III.3](https://github.com/Ikomia-dev/ikomia-oakd/tree/main/III-use_custom_model/3-run_model) (qui comptabilise environ 80 lignes).
 
 ```py
-from OakSingleModelRunner import OakSingleModelRunner
+from OakRunner import OakRunner
 import cv2
 
 # Fonction appelée à chaque itération de la boucle de traitement
 def process(runner):
-    w = runner.middle_cam.getPreviewWidth()
-    h = runner.middle_cam.getPreviewHeight()
-    frame = runner.middle_cam_output_queue.get().getCvFrame()
-    detections = runner.nn_output_queue.get().detections
+    frame = runner.output_queues["middle_cam"].get().getCvFrame()
+    detections = runner.output_queues["nn"].get().detections
     for det in detections:
-        topleft = (int(det.xmin*w), int(det.ymin*h))
-        botright = (int(det.xmax*w), int(det.ymax*h))
+        topleft = (int(det.xmin*300), int(det.ymin*300))
+        botright = (int(det.xmax*300), int(det.ymax*300))
         cv2.rectangle(frame, topleft, botright, (255,0,0), 2)
         cv2.putText(frame, runner.labels[det.label] + f" {int(det.confidence*100)}%", (topleft[0]+10, topleft[1]+20), cv2.FONT_HERSHEY_TRIPLEX, 0.5, (255,0,0))
+    cv2.putText(frame, f"fps: {round(runner.getFPS())}", (2, 300 - 4), cv2.FONT_HERSHEY_TRIPLEX, 0.4, color=(255, 255, 255))
     cv2.imshow("output", frame)
 
 # Instancier le runner
-runner = OakSingleModelRunner() 
+runner = OakRunner() 
 
 # Configurer la caméra centrale
-runner.setMiddleCamera(frame_width=300, frame_height=300)
-runner.middle_cam.setInterleaved(False)
-runner.middle_cam.setFps(20)
+runner.setMiddleCamera(frame_width=300, frame_height=300, stream_name="middle_cam")
+middle_cam = runner.getMiddleCamera()
+middle_cam.setInterleaved(False)
+middle_cam.setFps(20)
 
 # Configurer le réseau de neurones
-runner.setMobileNetDetectionModel(path="/chemin/vers/le.blob")
+runner.addMobileNetDetectionModel(stream_name="nn", path="/chemin/vers/le.blob")
+middle_cam.preview.link(runner.neural_networks["nn"].input)
 runner.labels = ["background", "no mask", "mask", "no mask"]
 
 # Exécuter la boucle de traitement
@@ -63,16 +64,19 @@ Pour l'instant il y en a 3, réparties dans 2 fichiers.
 - Afficher le nombre d'images par seconde (utils/draw.py)
 - Dessiner les zones d'intérêts (utils/draw.py)
 - Configurer le [SpatialLocationCalculator](https://docs.luxonis.com/projects/api/en/latest/references/python/#depthai.SpatialLocationCalculator) (utils/compute.py)
+- Formater un tableau 2D en 1D (utils/compute.py)
+- Calculer coordonnées vectorielles 3D à partir point 2D (utils/compute.py)
+- Déterminer le point d'intersection entre deux vecteurs (utils/compute.py)
+- Modéliser des points d'intérêts (utils/visualize.py)
 
 Ainsi, pour reprendre le programme ci-dessus, la fonction process peut désormais être écrite en moins de lignes.
 
 ```py
 from utils.draw import drawROI, displayFPS
 
-# Process function
 def process(runner):
-    frame = runner.middle_cam_output_queue.get().getCvFrame()
-    detections = runner.nn_output_queue.get().detections
+    frame = runner.output_queues["middle_cam"].get().getCvFrame()
+    detections = runner.output_queues["nn"].get().detections
     
     for det in detections:
         drawROI(frame, (det.xmin,det.ymin), (det.xmax,det.ymax),label=runner.labels[det.label], confidence=det.confidence)
