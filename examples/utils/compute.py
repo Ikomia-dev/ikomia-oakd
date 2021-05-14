@@ -34,6 +34,8 @@ def get_landmark_3d(landmark, focal_length=842, size=640):
 
 
 def get_vector_intersection(left_vector, left_camera_position, right_vector, right_camera_position):
+    if(len(left_vector)<2 or len(right_vector)<2):
+        return []
     n = np.cross(left_vector, right_vector)
     n1 = np.cross(left_vector, n)
     n2 = np.cross(right_vector, n)
