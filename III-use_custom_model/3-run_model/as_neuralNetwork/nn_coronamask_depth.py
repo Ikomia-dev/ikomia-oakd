@@ -49,47 +49,46 @@ fps_limit = 20
 
 
 # Configure spatial location calculator
-spatial_location_calculator = pipeline.create(dai.node.SpatialLocationCalculator)
+spatial_location_calculator = pipeline.createSpatialLocationCalculator()
 spatial_location_calculator.setWaitForConfigInput(True)
 
 # Prepare depth handling
-depth = pipeline.create(dai.node.StereoDepth)
-depth.setOutputDepth(True)
+depth = pipeline.createStereoDepth()
 depth.setConfidenceThreshold(255)
 depth.depth.link(spatial_location_calculator.inputDepth)
 
 # Set spatial location calculator input/output stream
-spatial_data_output_stream = pipeline.create(dai.node.XLinkOut)
+spatial_data_output_stream = pipeline.createXLinkOut()
 spatial_data_output_stream.setStreamName("spatialData")
 spatial_location_calculator.out.link(spatial_data_output_stream.input)
-spatial_config_input_stream = pipeline.create(dai.node.XLinkIn)
+spatial_config_input_stream = pipeline.createXLinkIn()
 spatial_config_input_stream.setStreamName("spatialCalcConfig")
 spatial_config_input_stream.out.link(spatial_location_calculator.inputConfig)
 
 
 # Set rgb camera source
-cam_rgb = pipeline.create(dai.node.ColorCamera)
+cam_rgb = pipeline.createColorCamera()
 cam_rgb.setPreviewSize(frame_width, frame_height)
 cam_rgb.setInterleaved(False)
 cam_rgb.setFps(fps_limit)
 
 # Set depth source
-left = pipeline.create(dai.node.MonoCamera)
+left = pipeline.createMonoCamera()
 left.setResolution(dai.MonoCameraProperties.SensorResolution.THE_400_P)
 left.setBoardSocket(dai.CameraBoardSocket.LEFT)
-right = pipeline.create(dai.node.MonoCamera)
+right = pipeline.createMonoCamera()
 right.setResolution(dai.MonoCameraProperties.SensorResolution.THE_400_P)
 right.setBoardSocket(dai.CameraBoardSocket.RIGHT)
 
 
 # Configure neural network settings
-nn = pipeline.create(dai.node.NeuralNetwork)
+nn = pipeline.createNeuralNetwork()
 nn.setBlobPath(nn_path)
 cam_rgb.preview.link(nn.input) # link cam_rgb to nn input layer
 
 
 # Set rgb output stream
-rgb_output_stream = pipeline.create(dai.node.XLinkOut)
+rgb_output_stream = pipeline.createXLinkOut()
 rgb_output_stream.setStreamName("rgb")
 nn.passthrough.link(rgb_output_stream.input)
 
@@ -98,14 +97,13 @@ left.out.link(depth.left)
 right.out.link(depth.right)
 
 # Set neural network output stream
-nn_output_stream = pipeline.create(dai.node.XLinkOut)
+nn_output_stream = pipeline.createXLinkOut()
 nn_output_stream.setStreamName("nn")
 nn.out.link(nn_output_stream.input)
 
 
 
 with dai.Device(pipeline) as device:
-    device.startPipeline()
     spatial_config_input_queue = device.getInputQueue("spatialCalcConfig")
     rgb_queue = device.getOutputQueue(name="rgb", maxSize=4, blocking=False)
     nn_queue = device.getOutputQueue(name="nn", maxSize=4, blocking=False)

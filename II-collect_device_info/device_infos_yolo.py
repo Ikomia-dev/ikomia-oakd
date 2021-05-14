@@ -56,18 +56,18 @@ frame_height = 416
 pipeline = dai.Pipeline()
 
 # Define a source - color camera (RGB)
-camRgb = pipeline.create(dai.node.ColorCamera)
+camRgb = pipeline.createColorCamera()
 camRgb.setPreviewSize(frame_width, frame_height)
 camRgb.setInterleaved(False)
 camRgb.setFps(fps_limit)
 
 # Define system logger source
-sys_logger = pipeline.create(dai.node.SystemLogger)
+sys_logger = pipeline.createSystemLogger()
 sys_logger.setRate(logger_freq)
 
 
 # network specific settings
-detectionNetwork = pipeline.create(dai.node.YoloDetectionNetwork)
+detectionNetwork = pipeline.createYoloDetectionNetwork()
 detectionNetwork.setConfidenceThreshold(0.5)
 detectionNetwork.setNumClasses(80)
 detectionNetwork.setCoordinateSize(4)
@@ -83,28 +83,25 @@ camRgb.preview.link(detectionNetwork.input)
 
 
 # Create outputs
-xoutRgb = pipeline.create(dai.node.XLinkOut)
+xoutRgb = pipeline.createXLinkOut()
 xoutRgb.setStreamName("rgb")
 if syncNN:
     detectionNetwork.passthrough.link(xoutRgb.input)
 else:
     camRgb.preview.link(xoutRgb.input)
 
-nnOut = pipeline.create(dai.node.XLinkOut)
+nnOut = pipeline.createXLinkOut()
 nnOut.setStreamName("detections")
 detectionNetwork.out.link(nnOut.input)
 
 # Create outputs
-linkOut = pipeline.create(dai.node.XLinkOut)
+linkOut = pipeline.createXLinkOut()
 linkOut.setStreamName("sysinfo")
 sys_logger.out.link(linkOut.input)
 
 
 # Pipeline is defined, now we can connect to the device
 with dai.Device(pipeline) as device:
-    # Start pipeline
-    device.startPipeline()
-
     # Output queues will be used to get the rgb frames and nn data from the outputs defined above
     qRgb = device.getOutputQueue(name="rgb", maxSize=4, blocking=False)
     qDet = device.getOutputQueue(name="detections", maxSize=4, blocking=False)

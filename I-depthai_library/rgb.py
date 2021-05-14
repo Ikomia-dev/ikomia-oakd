@@ -5,20 +5,19 @@ import depthai as dai
 pipeline = dai.Pipeline()
 
 # Define a source - color camera (RGB)
-camRgb = pipeline.create(dai.node.ColorCamera)
+camRgb = pipeline.createColorCamera()
 camRgb.setPreviewSize(800, 540)
 camRgb.setBoardSocket(dai.CameraBoardSocket.RGB) # Specify which board socket to use
 camRgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
 camRgb.setColorOrder(dai.ColorCameraProperties.ColorOrder.RGB)
 
 # Create output
-xoutRgb = pipeline.create(dai.node.XLinkOut)
+xoutRgb = pipeline.createXLinkOut()
 xoutRgb.setStreamName("rgb")
 camRgb.preview.link(xoutRgb.input) # Link video stream to output
 
 # Pipeline is defined, now we can connect to the device
 with dai.Device(pipeline) as device:
-    device.startPipeline() # Start video
     qRgb = device.getOutputQueue(name="rgb", maxSize=4, blocking=False) # Get camera output stream
 
     while True:

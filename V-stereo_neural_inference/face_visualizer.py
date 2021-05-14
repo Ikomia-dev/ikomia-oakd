@@ -30,7 +30,7 @@ pipeline = dai.Pipeline()
 # Configure sided cameras and neural networks
 for side in ["left", "right"]:
     # Init sided camera
-    cam = pipeline.create(dai.node.MonoCamera)
+    cam = pipeline.createMonoCamera()
     if(side == "left"):
         cam.setBoardSocket(dai.CameraBoardSocket.LEFT)
     else:
@@ -38,37 +38,37 @@ for side in ["left", "right"]:
     cam.setResolution(dai.MonoCameraProperties.SensorResolution.THE_720_P)
 
     # Transform camera output into proper face detection input
-    face_manip = pipeline.create(dai.node.ImageManip)
+    face_manip = pipeline.createImageManip()
     face_manip.initialConfig.setResize(face_input_width, face_input_height)
     face_manip.initialConfig.setFrameType(dai.RawImgFrame.Type.BGR888p) # Switch to BGR (but still grayscaled)
     cam.out.link(face_manip.inputImage)
 
     # Set sided camera output stream
-    face_manip_output_stream = pipeline.create(dai.node.XLinkOut)
+    face_manip_output_stream = pipeline.createXLinkOut()
     face_manip_output_stream.setStreamName(side + "_cam")
     face_manip.out.link(face_manip_output_stream.input)
 
     # Init the face detection neural network
-    face_nn = pipeline.create(dai.node.NeuralNetwork)
+    face_nn = pipeline.createNeuralNetwork()
     face_nn.setBlobPath(nn_face_detection_path)
     face_manip.out.link(face_nn.input)
 
     # Set face detection neural network output stream
-    face_nn_output_stream = pipeline.create(dai.node.XLinkOut)
+    face_nn_output_stream = pipeline.createXLinkOut()
     face_nn_output_stream.setStreamName("nn_" + side + "_faces")
     face_nn.out.link(face_nn_output_stream.input)
 
     # Init the landmarks detection neural network
-    landmarks_nn = pipeline.create(dai.node.NeuralNetwork)
+    landmarks_nn = pipeline.createNeuralNetwork()
     landmarks_nn.setBlobPath(nn_landmarks_path)
 
     # Set landmarks detection neural network input stream
-    landmarks_nn_input_stream = pipeline.create(dai.node.XLinkIn)
+    landmarks_nn_input_stream = pipeline.createXLinkIn()
     landmarks_nn_input_stream.setStreamName("nn_" + side + "_landmarks")
     landmarks_nn_input_stream.out.link(landmarks_nn.input)
 
     # Set landmarks detection neural network output stream
-    landmarks_nn_output_stream = pipeline.create(dai.node.XLinkOut)
+    landmarks_nn_output_stream = pipeline.createXLinkOut()
     landmarks_nn_output_stream.setStreamName("nn_" + side + "_landmarks")
     landmarks_nn.out.link(landmarks_nn_output_stream.input)
 
@@ -82,8 +82,6 @@ else:
 visualizer.start()
 
 with dai.Device(pipeline) as device:
-    device.startPipeline()
-
     input_queues = dict()
     output_queues = dict()
     for side in ["left", "right"]:

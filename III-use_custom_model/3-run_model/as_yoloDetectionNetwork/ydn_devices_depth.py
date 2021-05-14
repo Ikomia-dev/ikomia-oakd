@@ -42,28 +42,27 @@ frame_height = 416
 fps_limit = 20
 
 # Prepare depth handling
-depth = pipeline.create(dai.node.StereoDepth)
-depth.setOutputDepth(True)
+depth = pipeline.createStereoDepth()
 depth.setConfidenceThreshold(255)
 
 # Set depth source
-left = pipeline.create(dai.node.MonoCamera)
+left = pipeline.createMonoCamera()
 left.setResolution(dai.MonoCameraProperties.SensorResolution.THE_400_P)
 left.setBoardSocket(dai.CameraBoardSocket.LEFT)
-right = pipeline.create(dai.node.MonoCamera)
+right = pipeline.createMonoCamera()
 right.setResolution(dai.MonoCameraProperties.SensorResolution.THE_400_P)
 right.setBoardSocket(dai.CameraBoardSocket.RIGHT)
 
 
 # Set rgb camera source
-cam_rgb = pipeline.create(dai.node.ColorCamera)
+cam_rgb = pipeline.createColorCamera()
 cam_rgb.setPreviewSize(frame_width, frame_height)
 cam_rgb.setInterleaved(False)
 cam_rgb.setFps(fps_limit)
 
 
 # Configure neural network settings
-nn = pipeline.create(dai.node.YoloSpatialDetectionNetwork)
+nn = pipeline.createYoloSpatialDetectionNetwork()
 nn.setConfidenceThreshold(0.5) # keep detections if confidence>50%
 nn.setBlobPath(nn_path)
 nn.setNumClasses(80)
@@ -82,19 +81,18 @@ right.out.link(depth.right)
 depth.depth.link(nn.inputDepth)
 
 # Set rgb output stream
-rgb_output_stream = pipeline.create(dai.node.XLinkOut)
+rgb_output_stream = pipeline.createXLinkOut()
 rgb_output_stream.setStreamName("rgb")
 nn.passthrough.link(rgb_output_stream.input)
 
 # Set neural network output stream
-nn_output_stream = pipeline.create(dai.node.XLinkOut)
+nn_output_stream = pipeline.createXLinkOut()
 nn_output_stream.setStreamName("nn")
 nn.out.link(nn_output_stream.input)
 
 
 
 with dai.Device(pipeline) as device:
-    device.startPipeline()
     rgb_queue = device.getOutputQueue(name="rgb", maxSize=4, blocking=False)
     detection_queue = device.getOutputQueue(name="nn", maxSize=4, blocking=False)
 

@@ -31,7 +31,7 @@ frame_height = 416
 pipeline = dai.Pipeline()
 
 # Define a source - color camera (RGB)
-camRgb = pipeline.create(dai.node.ColorCamera)
+camRgb = pipeline.createColorCamera()
 camRgb.setPreviewSize(frame_width, frame_height)
 camRgb.setBoardSocket(dai.CameraBoardSocket.RGB)
 camRgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
@@ -39,20 +39,19 @@ camRgb.setColorOrder(dai.ColorCameraProperties.ColorOrder.RGB)
 camRgb.setFps(fps_limit)
 
 # Define system logger source
-sys_logger = pipeline.create(dai.node.SystemLogger)
+sys_logger = pipeline.createSystemLogger()
 sys_logger.setRate(logger_freq)
 
 # Create outputs
-xoutRgb = pipeline.create(dai.node.XLinkOut)
+xoutRgb = pipeline.createXLinkOut()
 xoutRgb.setStreamName("rgb")
 camRgb.preview.link(xoutRgb.input)
-linkOut = pipeline.create(dai.node.XLinkOut)
+linkOut = pipeline.createXLinkOut()
 linkOut.setStreamName("sysinfo")
 sys_logger.out.link(linkOut.input)
 
 
 with dai.Device(pipeline) as device:
-    device.startPipeline()
     qRgb = device.getOutputQueue(name="rgb", maxSize=4, blocking=False)
     q_sysinfo = device.getOutputQueue(name="sysinfo", maxSize=4, blocking=False)
 

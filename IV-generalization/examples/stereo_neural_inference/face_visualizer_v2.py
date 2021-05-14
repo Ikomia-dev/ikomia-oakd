@@ -53,6 +53,7 @@ def process(runner):
             runner.input_queues["nn_"+side+"_landmarks"].send(land_data)
             output = runner.output_queues["nn_"+side+"_landmarks"].get().getFirstLayerFp16()
             landmarks = np.array(output).reshape(5,2)
+            # print(landmarks)
 
             # Draw detections
             drawROI(frame, (xmin,ymin), (xmax,ymax), color=(0,200,230))

@@ -26,7 +26,6 @@ def main():
     # Configure stereo depth
     runner.setMonoDepth()
     stereo = runner.getStereo()
-    stereo.setOutputDepth(True)
     stereo.setConfidenceThreshold(255)
 
     # Configure neural network model and init input / output streams

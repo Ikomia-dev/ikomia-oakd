@@ -40,14 +40,14 @@ fps_limit = 20
 
 
 # Set rgb camera source
-cam_rgb = pipeline.create(dai.node.ColorCamera)
+cam_rgb = pipeline.createColorCamera()
 cam_rgb.setPreviewSize(frame_width, frame_height)
 cam_rgb.setInterleaved(False)
 cam_rgb.setFps(fps_limit)
 
 
 # Configure neural network settings
-nn = pipeline.create(dai.node.YoloDetectionNetwork)
+nn = pipeline.createYoloDetectionNetwork()
 nn.setConfidenceThreshold(0.5) # keep detections if confidence>50%
 nn.setBlobPath(nn_path)
 nn.setNumClasses(80)
@@ -59,19 +59,18 @@ cam_rgb.preview.link(nn.input) # link cam_rgb to nn input layer
 
 
 # Set rgb output stream
-rgb_output_stream = pipeline.create(dai.node.XLinkOut)
+rgb_output_stream = pipeline.createXLinkOut()
 rgb_output_stream.setStreamName("rgb")
 nn.passthrough.link(rgb_output_stream.input)
 
 # Set neural network output stream
-nn_output_stream = pipeline.create(dai.node.XLinkOut)
+nn_output_stream = pipeline.createXLinkOut()
 nn_output_stream.setStreamName("nn")
 nn.out.link(nn_output_stream.input)
 
 
 
 with dai.Device(pipeline) as device:
-    device.startPipeline()
     rgb_queue = device.getOutputQueue(name="rgb", maxSize=4, blocking=False)
     detection_queue = device.getOutputQueue(name="nn", maxSize=4, blocking=False)
 
