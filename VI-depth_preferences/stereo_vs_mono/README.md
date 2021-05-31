@@ -1,0 +1,7 @@
+# Inférence Neuronale - Stéréo VS Mono
+
+L'objectif est de comparer les deux modes de fonctionnements permettant de prendre en compte la profondeur. Pour ce faire, reprenons le programme qui modélise la position du corps en 3D, disponible dans les [exemples](https://github.com/Ikomia-dev/ikomia-oakd/tree/main/examples). Je l'ai reproduit avec le mode monovision, en faisant l'inférence depuis la caméra centrale, puis en estimant les coordonnées 3D à l'aide du calculateur de position spatiale.
+
+Le mode monovision a vocation à estimer la position spatiale d'une zone donnée, or, ici, on cherche à estimer la position de points précis. Pour tout de même avoir un résultat, la zone transmise au calculateur de position spatiale est un carré 3 par 3, avec au centre, le point d'intérêt.
+
+Les résultats sont très peu concluants et c'est logique. Le fonctionnement monovision sert à estimer les coordonnées 3D d'une zone d'intérêt, en moyennant la disparité des pixels concernés. Alors que le fonctionnement stéréovision sert à estimer les coordonnées 3D de points précis, il faut alors privilégier le mode le plus adapté au besoin, dans la plupart des cas, l'inférence neuronale stéréo et mono ne sont donc pas en concurrence.
