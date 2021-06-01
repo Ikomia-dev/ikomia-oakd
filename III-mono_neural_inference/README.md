@@ -1,5 +1,8 @@
 # Mono Neural Inference - Gestion de la profondeur
 
+On parle de Mono Neural Inference, car un seul flux vidéo est utilisé exécuter le modèle, cependant, grâce à l'OAK-D, ça n'empèche pas d'en déduire la profondeur.
+<br><br>
+
 ## Modèle quelconque
 <br>
 
