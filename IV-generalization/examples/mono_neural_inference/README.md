@@ -1,1 +1,0 @@
-Exemples reprennant les programmes du point [III.3](https://github.com/Ikomia-dev/ikomia-oakd/tree/main/III-use_custom_model/3-run_model) mais en utilisant notre petite bibliothèque.

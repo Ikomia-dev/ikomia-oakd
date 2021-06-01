@@ -1,1 +1,0 @@
-Contient les modèles utilisés.
