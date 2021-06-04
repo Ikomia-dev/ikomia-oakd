@@ -55,8 +55,8 @@ cam = runner.getMiddleCamera()
 cam.setInterleaved(False)
 cam.setFps(fps_limit)
 
-runner.addNeuralNetworkModel(stream_name="nn_face", path=str(Path(__file__).parent) + "/../models/face_detection_4shaves.blob")
+runner.addNeuralNetworkModel(stream_name="nn_face", path=str(Path(__file__).parent) + "/../_models/face_detection_v2.blob")
 cam.preview.link(runner.neural_networks["nn_face"].input)
-runner.addNeuralNetworkModel(stream_name="nn_landmarks", path=str(Path(__file__).parent) + "/../models/face_landmarks.blob")
+runner.addNeuralNetworkModel(stream_name="nn_landmarks", path=str(Path(__file__).parent) + "/../_models/face_landmarks.blob")
 
 runner.run(process=process)

@@ -10,7 +10,7 @@ import cv2
 
 # Define program parameters
 nn_face_detection_path = str(Path(__file__).parent) + "/../_models/face_detection.blob"
-nn_landmarks_path = str(Path(__file__).parent) + "/../_models/landmarks.blob"
+nn_landmarks_path = str(Path(__file__).parent) + "/../_models/tiny_face_landmarks.blob"
 camera_locations = dict() # 3D location of cameras (for OAK-D)
 camera_locations["left"] = (0.107, -0.038, 0.008)
 camera_locations["right"] = (0.109, 0.039, 0.008)

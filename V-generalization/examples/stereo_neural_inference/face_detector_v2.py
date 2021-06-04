@@ -26,7 +26,7 @@ def process(runner):
         faces_data = runner.output_queues["nn_"+side+"_faces"].get().getFirstLayerFp16()
 
         if(faces_data[2] > runner.custom_arguments["required_confidence"]):
-            drawROI(frame, (faces_data[3],faces_data[4]), (faces_data[5],faces_data[6]))
+            drawROI(frame, (faces_data[3],faces_data[4]), (faces_data[5],faces_data[6]), color=(0,200,230))
         displayFPS(frame, runner.getFPS())
         cv2.imshow(side, frame)
 

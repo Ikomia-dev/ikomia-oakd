@@ -8,7 +8,7 @@ import cv2
 
 # Define program parameters
 nn_face_detection_path = str(Path(__file__).parent) + "/../_models/face_detection.blob"
-nn_landmarks_path = str(Path(__file__).parent) + "/../_models/landmarks.blob"
+nn_landmarks_path = str(Path(__file__).parent) + "/../_models/tiny_face_landmarks.blob"
 
 # Define neural network input sizes
 face_input_width = 300 # also frame width

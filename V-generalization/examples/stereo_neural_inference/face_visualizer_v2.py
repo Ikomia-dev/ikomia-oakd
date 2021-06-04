@@ -95,6 +95,6 @@ for side in ["left", "right"]:
     runner.addNeuralNetworkModel(stream_name="nn_"+side+"_faces", path=str(Path(__file__).parent) + "/../../../_models/face_detection.blob", handle_mono_depth=False)
     face_manip.out.link(runner.neural_networks["nn_"+side+"_faces"].input) # link transformed video stream to neural network entry
 
-    runner.addNeuralNetworkModel(stream_name="nn_"+side+"_landmarks", path=str(Path(__file__).parent) + "/../../../_models/landmarks.blob", handle_mono_depth=False)
+    runner.addNeuralNetworkModel(stream_name="nn_"+side+"_landmarks", path=str(Path(__file__).parent) + "/../../../_models/tiny_face_landmarks.blob", handle_mono_depth=False)
 
 runner.run(process=process, init=init)
