@@ -23,7 +23,7 @@ nb_points = 18
 
 
 def init(runner):
-    runner.custom_arguments["visualizer"] = HumanPoseVisualizer(600, 600, [runner.left_camera_location, runner.right_camera_location], colors=colors, pairs=pairs)
+    runner.custom_arguments["visualizer"] = HumanPoseVisualizer(300, 300, [runner.left_camera_location, runner.right_camera_location], colors=colors, pairs=pairs)
     runner.custom_arguments["visualizer"].start()
 
 
@@ -62,7 +62,7 @@ def process(runner):
         displayFPS(frame, runner.getFPS())
         cv2.imshow(side, frame)
 
-    # Determined depth to precisely locate landmarks in space
+    # Determined depth to accuratly locate landmarks in space
     landmark_spatial_locations = []
     for i in range(nb_points):
         landmark_spatial_locations.append(np.array(get_vector_intersection(spatial_vectors["left"][i], runner.left_camera_location, spatial_vectors["right"][i], runner.right_camera_location)))
@@ -76,14 +76,14 @@ for side in ["left", "right"]:
     if(side == "left"):
         runner.setLeftCamera(frame_width, frame_height)
         runner.getLeftCamera().setFps(fps_limit)
-        face_manip = runner.getLeftCameraManip()
+        manip = runner.getLeftCameraManip()
     else:
         runner.setRightCamera(frame_width, frame_height)
         runner.getRightCamera().setFps(fps_limit)
-        face_manip = runner.getRightCameraManip()
+        manip = runner.getRightCameraManip()
 
-    face_manip.initialConfig.setFrameType(dai.RawImgFrame.Type.BGR888p) # Switch to BGR (but still grayscaled)
-    runner.addNeuralNetworkModel(stream_name="nn_"+side, path=str(Path(__file__).parent) + "/../models/pose_estimation.blob", handle_mono_depth=False)
-    face_manip.out.link(runner.neural_networks["nn_"+side].input) # link transformed video stream to neural network entry
+    manip.initialConfig.setFrameType(dai.RawImgFrame.Type.BGR888p) # Switch to BGR (but still grayscaled)
+    runner.addNeuralNetworkModel(stream_name="nn_"+side, path=str(Path(__file__).parent) + "/../_models/pose_estimation.blob", handle_mono_depth=False)
+    manip.out.link(runner.neural_networks["nn_"+side].input) # link transformed video stream to neural network entry
 
 runner.run(process=process, init=init)

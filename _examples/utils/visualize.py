@@ -27,7 +27,7 @@ def getMinMax(landmarks):
 
 
 class LandmarksVisualizer:
-    def __init__(self, window_width, window_height, cameras_positions, colors=[], pairs=[]):
+    def __init__(self, window_width, window_height, cameras_positions, size=1, colors=[], pairs=[]):
         self._cameras_positions = cameras_positions
         self._window_width = window_width
         self._window_height = window_height
@@ -35,13 +35,14 @@ class LandmarksVisualizer:
         self._thread = None
         self.colors = colors
         self.pairs = pairs
+        self._size = size
 
         self._lastPosX = 0.0
         self._lastPosY = 0.0
 
-        self.x_axis_size = 0.1
-        self.y_axis_size = 0.1
-        self.z_axis_size = 0.1
+        self.x_axis_size = 0.05*size
+        self.y_axis_size = 0.05*size
+        self.z_axis_size = 0.05*size
         
         self.pair_width = 2.0
         self.axis_width = 0.2
@@ -181,7 +182,7 @@ class LandmarksVisualizer:
         pygame.display.set_mode(display, DOUBLEBUF|OPENGL)
 
         gluPerspective(45, (display[0]/display[1]), 0.1, 50.0)
-        glTranslatef(0.0, 0.0, -4.0)
+        glTranslatef(0.0, 0.0, -4.0*self._size)
 
         while True:
             for event in pygame.event.get():
@@ -210,12 +211,15 @@ class LandmarksVisualizer:
 
 
 class HumanPoseVisualizer(LandmarksVisualizer):
-    def __init__(self, window_width, window_height, cameras_positions, colors=[], pairs=[]):
-        super().__init__(window_width, window_height, cameras_positions, colors, pairs)
+    def __init__(self, window_width, window_height, cameras_positions, size=1, colors=[], pairs=[]):
+        super().__init__(window_width, window_height, cameras_positions, size, colors, pairs)
 
 
     def setLandmarks(self, landmarks):
         self._landmarks = landmarks
+        points = [landmark for landmark in landmarks if len(landmark)>0]
+        if(len(points) > 0):
+            self._xmin, self._xmax, self._ymin, self._ymax, self._zmin, self._zmax = getMinMax(points)
 
     
     def _drawLandmarks(self):
@@ -228,7 +232,7 @@ class HumanPoseVisualizer(LandmarksVisualizer):
             if(len(self._landmarks[i]) > 2):
                 if(len(self.colors) >= length):
                     glColor3f(self.colors[i][0], self.colors[i][1], self.colors[i][2])
-                glVertex3f(self._landmarks[i][0], self._landmarks[i][1], self._landmarks[i][2])
+                glVertex3f(self._landmarks[i][0]-(self._xmin+self._xmax)/2, self._landmarks[i][1], self._landmarks[i][2])
         glEnd()
         glDisable(GL_POINT_SMOOTH)
 
@@ -247,7 +251,7 @@ class HumanPoseVisualizer(LandmarksVisualizer):
                                 color[i] += self.colors[landmark_index][i]/(255*len(pair))
                         glColor3f(color[0], color[1], color[2])
                         for landmark_index in pair:
-                            glVertex3fv(self._landmarks[landmark_index])
+                            glVertex3fv([self._landmarks[landmark_index][0]-(self._xmin+self._xmax)/2, self._landmarks[landmark_index][1], self._landmarks[landmark_index][2]])
             else:
                 glColor3f(self.pair_default_color[0], self.pair_default_color[1], self.pair_default_color[2])
                 for pair in self.pairs:
@@ -264,9 +268,9 @@ class HumanPoseVisualizer(LandmarksVisualizer):
 
         gluPerspective(45, (display[0]/display[1]), 0.1, 50.0)
 
-        glTranslatef(0.0, 0.0, -4)
-        glRotatef(90, 1, 0, 0)
-        glRotatef(270, 0, 0, 1)
+        glTranslatef(0.0, 0.0, -4.0*self._size)
+        glRotatef(90, self._size, 0, 0)
+        glRotatef(270, 0, 0, self._size)
 
         while True:
             for event in pygame.event.get():
