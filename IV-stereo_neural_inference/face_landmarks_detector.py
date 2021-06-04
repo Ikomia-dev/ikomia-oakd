@@ -1,5 +1,3 @@
-from utils.draw import displayFPS, drawROI
-from utils.compute import to_planar
 from pathlib import Path
 import depthai as dai
 import numpy as np
@@ -17,6 +15,14 @@ face_input_width = 300 # also frame width
 face_input_height = 300 # also frame height
 landmarks_input_width = 48
 landmarks_input_height = 48
+
+
+
+# Convert multidimensional array into unidimensional array
+def to_planar(arr: np.ndarray, shape: tuple) -> list:
+    return [val for channel in cv2.resize(arr, shape).transpose(2, 0, 1) for y_col in channel for val in y_col]
+
+
 
 # Init pipeline
 pipeline = dai.Pipeline()
@@ -108,11 +114,11 @@ with dai.Device(pipeline) as device:
                 landmarks = np.array(output).reshape(5,2)
 
                 # Draw detections
-                drawROI(frame, (xmin,ymin), (xmax,ymax), color=(0,200,230))
+                cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (0,200,230), 2)
                 for x,y in landmarks:
                     cv2.circle(frame, (int(x*(xmax-xmin))+xmin,int(y*(ymax-ymin))+ymin), 2, (0,0,255))
 
-            displayFPS(frame, (frame_count / (time.monotonic()-start_time)))
+            cv2.putText(frame, f"fps: {int((frame_count / (time.monotonic() - start_time)))}", (2, frame.shape[0] - 4), cv2.FONT_HERSHEY_TRIPLEX, 0.4, color=(255, 255, 255))
             cv2.imshow(side, frame)
 
         frame_count += 1

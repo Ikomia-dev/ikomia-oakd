@@ -114,7 +114,9 @@ with dai.Device(pipeline) as device:
 
 
 ## face_visualizer
-Programme similaire, mais qui, à partir des points d'intérêts détectés, calcule les coordonnées spatiales et visualise les points d'intérêts en 3D (grâce à [pygame](https://www.pygame.org/news) et [OpenGL](https://www.opengl.org//)).
+Programme similaire, mais qui, à partir des points d'intérêts détectés, calcule les coordonnées spatiales et visualise les points d'intérêts en 3D (grâce à [pygame](https://www.pygame.org/news) et [OpenGL](https://www.opengl.org//)). Le fichier "visualize.py" regroupe des classes pour visualiser des données en 3D.
+- LandmarksCubeVisualizer : Points d'intérêts centrés avec tracé de la zone d'intérêt (pour observer la forme).
+- LandmarksDepthVisualizer : Points d'intérêts placés dans le plan par les intersections des vecteurs entre caméras et points (pour observer la profondeur).
 
 ```py
 for side in ["left", "right"]:

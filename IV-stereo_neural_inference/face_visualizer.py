@@ -1,9 +1,8 @@
-from utils.compute import to_planar, get_landmark_3d, get_vector_intersection
-from utils.visualize import LandmarksCubeVisualizer, LandmarksDepthVisualizer
-from utils.draw import displayFPS, drawROI
+from visualize import LandmarksCubeVisualizer, LandmarksDepthVisualizer
 from pathlib import Path
 import depthai as dai
 import numpy as np
+import math
 import time
 import cv2
 
@@ -22,6 +21,53 @@ face_input_width = 300 # also frame width
 face_input_height = 300 # also frame height
 landmarks_input_width = 48
 landmarks_input_height = 48
+
+
+
+# Convert multidimensional array into unidimensional array
+def to_planar(arr: np.ndarray, shape: tuple) -> list:
+    return [val for channel in cv2.resize(arr, shape).transpose(2, 0, 1) for y_col in channel for val in y_col]
+
+
+# Get vector from camera to landmark direction
+def get_landmark_3d(landmark, focal_length=842, size=640):
+    landmark_norm = 0.5 - np.array(landmark)
+    landmark_image_coord = landmark_norm * size
+
+    landmark_spherical_coord = [math.atan2(landmark_image_coord[0], focal_length),
+                                -math.atan2(landmark_image_coord[1], focal_length) + math.pi / 2]
+
+    landmarks_3D = [
+        math.sin(landmark_spherical_coord[1]) * math.cos(landmark_spherical_coord[0]),
+        math.sin(landmark_spherical_coord[1]) * math.sin(landmark_spherical_coord[0]),
+        math.cos(landmark_spherical_coord[1])
+    ]
+
+    return landmarks_3D
+
+
+# Get intersection point between two vectors
+def get_vector_intersection(left_vector, left_camera_position, right_vector, right_camera_position):
+    n = np.cross(left_vector, right_vector)
+    n1 = np.cross(left_vector, n)
+    n2 = np.cross(right_vector, n)
+
+    top = np.dot(np.subtract(right_camera_position, left_camera_position), n2)
+    bottom = np.dot(left_vector, n2)
+    divided = top / bottom
+    mult = divided * left_vector
+    c1 = left_camera_position + mult
+
+    top = np.dot(np.subtract(left_camera_position, right_camera_position), n1)
+    bottom = np.dot(right_vector, n1)
+    divided = top / bottom
+    mult = divided * right_vector
+    c2 = right_camera_position + mult
+
+    center = (c1 + c2) / 2
+    return center
+
+
 
 # Init pipeline
 pipeline = dai.Pipeline()
@@ -123,7 +169,7 @@ with dai.Device(pipeline) as device:
                 landmarks = np.array(output).reshape(5,2)
 
                 # Draw detections
-                drawROI(frame, (xmin,ymin), (xmax,ymax), color=(0,200,230))
+                cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (0,200,230), 2)
                 for i in range(len(landmarks)):
                     cv2.circle(frame, (int(landmarks[i][0]*(xmax-xmin))+xmin,int(landmarks[i][1]*(ymax-ymin))+ymin), 2, (colors[i][2], colors[i][1], colors[i][0]))
 
@@ -133,7 +179,7 @@ with dai.Device(pipeline) as device:
                     spatial_vectors[side].append([spatial_landmarks[i][j] - camera_locations[side][j] for j in range(3)])
                 spatial_vectors[side] = np.array(spatial_vectors[side]) # convert list to numpy array
 
-            displayFPS(frame, (frame_count / (time.monotonic()-start_time)))
+            cv2.putText(frame, f"fps: {int((frame_count / (time.monotonic() - start_time)))}", (2, frame.shape[0] - 4), cv2.FONT_HERSHEY_TRIPLEX, 0.4, color=(255, 255, 255))
             cv2.imshow(side, frame)
 
         # Determined depth to precisely locate landmarks in space

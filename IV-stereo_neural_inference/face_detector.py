@@ -1,4 +1,3 @@
-from utils.draw import displayFPS, drawROI
 from pathlib import Path
 import depthai as dai
 import time
@@ -70,9 +69,9 @@ with dai.Device(pipeline) as device:
                 keeped_faces.append([faces_data[3], faces_data[4], faces_data[5], faces_data[6]])
 
             for xmin, ymin, xmax, ymax in keeped_faces:
-                drawROI(frame, (xmin,ymin), (xmax,ymax))
+                cv2.rectangle(frame, (int(xmin*face_input_width),int(ymin*face_input_height)), (int(xmax*face_input_width),int(ymax*face_input_height)), (0,200,230), 2)
 
-            displayFPS(frame, (frame_count / (time.monotonic() - start_time)))
+            cv2.putText(frame, f"fps: {int((frame_count / (time.monotonic() - start_time)))}", (2, frame.shape[0] - 4), cv2.FONT_HERSHEY_TRIPLEX, 0.4, color=(255, 255, 255))
             cv2.imshow(side, frame)
 
         frame_count += 1
