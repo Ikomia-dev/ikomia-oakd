@@ -24,7 +24,7 @@ max_depth = 2000
 
 
 def init(runner, device):
-    runner.custom_arguments["visualizer"] = HumanPoseVisualizer(300, 300, [runner.left_camera_location, runner.right_camera_location], size=10, colors=colors, pairs=pairs)
+    runner.custom_arguments["visualizer"] = HumanPoseVisualizer(300, 300, [runner.left_camera_location, runner.right_camera_location], colors=colors, pairs=pairs)
     runner.custom_arguments["visualizer"].start()
 
 
@@ -55,7 +55,7 @@ def process(runner):
 
             runner.input_queues["slc"].send(slc_conf)
             spatial_data = runner.output_queues["slc"].get().getSpatialLocations()
-            spatial_landmarks.append([spatial_data[0].spatialCoordinates.x, spatial_data[0].spatialCoordinates.y, spatial_data[0].spatialCoordinates.z])
+            spatial_landmarks.append([spatial_data[0].spatialCoordinates.x/1000, spatial_data[0].spatialCoordinates.y/1000, spatial_data[0].spatialCoordinates.z/1000])
         else:
             landmarks.append(keypoints)
             spatial_landmarks.append(keypoints)
