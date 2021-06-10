@@ -6,7 +6,7 @@ En stéréovision, pour que croiser les flux vidéos des caméras latérales ait
 
 Le problème, c'est qu'inférer sur chaque caméra est très coûteux, de plus, il n'est pas envisageable de détecter trop de points, sous peine de trop impacter les performances. Ce mode de fonctionnement a donc vocation à repérer quelques points pour estimer précisément la profondeur. De plus la bibliothèque DepthAI n'aide pas dans la réalisation des calculs, il faut les programmer nous mêmes.
 
-Afin de comprendre les calculs, voici un [article](https://learnopencv.com/introduction-to-epipolar-geometry-and-stereo-vision/) qui explique la théorie de la stéréovision. Sinon, en m'inspirant des calculs présent dans l'[exemple](https://github.com/luxonis/depthai-experiments/tree/master/gen2-triangulation), j'ai écris deux fonctions pour déterminer les coordonnées 3D d'un point.
+Ces calculs sont assez complexes, dans le point [IV](https://github.com/Ikomia-dev/ikomia-oakd/tree/main/IV-stereo_neural_inference), je me suis inspiré de ceux présent dans l'[exemple](https://github.com/luxonis/depthai-experiments/tree/master/gen2-triangulation) officiel, j'obtiens alors deux fonctions pour déterminer les coordonnées 3D d'un point.
 
 ```py
 # Récupère la direction du vecteur allant de la caméra au point
@@ -50,7 +50,37 @@ def get_vector_intersection(left_vector, left_camera_position, right_vector, rig
     return center
 ```
 
+Ceci semble fonctionnel, j'ai testé en réalisant un programme "pose_estimation_stereo.py" qui détecte la forme d'un corps humain, puis, la modélise en 3D. Cependant, je ne comprends pas les calculs, je me suis donc penché sur une autre façon de faire en m'aidant de cet [article](https://learnopencv.com/introduction-to-epipolar-geometry-and-stereo-vision/).
 
-Pour montrer un cas d'utilisation, j'ai réalisé un programme "pose_estimation.py" qui détecte la forme d'un corps humain, puis, la modélise en 3D.
+L'idée est de faire l'opération inverse d'une capture d'image, au lieu de projeter la scène 3D en 2D (dans le plan image), on va reprendre les calculs pour passer de la projection 2D au coordonnées 3D. Pour en savoir plus sur ce processus, voici un [article](https://learnopencv.com/geometry-of-image-formation/) assez complet.
 
-Enfin, comme précisé dans la partie traitant de la monovision, il faut choisir de faire de l'inférence neuronale stéréo ou mono en fonction de la situation, les deux façons de faire ne rentres pas en concurrence, elles se complètent. Ainsi, pour visualiser la forme d'un objet, il vaut mieux faire de l'inférence neuronale stéréo, tandis que pour simplement estimer sa distance par rapport au dispositif, il vaut mieux inférer uniquement sur la caméra centrale et se fier à la carte de disparité.
+Pour ce faire, il faut récupérer les caractéristiques intrinsèques et extrinsèques des caméras et heureusement pour nous, ces informations sont stockées dans l'OAK-D, il suffit d'instancier la classe [CalibrationHandler](https://docs.luxonis.com/projects/api/en/latest/references/python/#depthai.CalibrationHandler), pour illustrer mes propos, voici quelques extraits du programme "calibration_info.py".
+
+```py
+# Création d'un objet CalibrationHandler
+calibration = device.readCalibration()
+
+# Récupération des paramètres intrinsèques
+left_intrinsics = np.array(calibration.getCameraIntrinsics(dai.CameraBoardSocket.LEFT, 1280, 720))
+right_intrinsics = np.array(calibration.getCameraIntrinsics(dai.CameraBoardSocket.RIGHT, 1280, 720))
+
+# Récupération des paramètres extrinsèques
+extrinsics = np.array(calibration.getCameraExtrinsics(dai.CameraBoardSocket.LEFT, dai.CameraBoardSocket.RIGHT))
+```
+
+À partir des matrices intrinsèques et extrinsèques, il est possible de calculer les matrices de projection des caméras, il s'agit d'un simple produit matriciel.
+```py
+projection_matrix = intrinsic_matrix.dot(extrinsic_matrix)
+```
+
+Enfin, à partir de cette matrice de projection, il est théoriquement possible d'en déduire un vecteur pointant vers le point dans l'espace 3D, j'ai donc écris une fonction qui est censé remplir le rôle de get_landmark_3d.
+```py
+def getSpatialVector(x, y, projection_matrix):
+    point = np.array([x,y,1]).reshape(3, 1).astype(np.float32)
+    vector = np.linalg.pinv(projection_matrix).dot(point)
+    return [vector[0][0], vector[1][0], vector[2][0]]
+```
+
+Cependant, en reproduisant le programme d'estimation de position 3D, "pose_estimation_stereo_alternative.py", je me suis aperçu que mes calculs sont totalement erronés. Je pense néanmoins qu'il ne faut pas écarter cette piste, il me semble plus juste de calculer la position 3D à partir des matrices de projection des caméras.
+
+Pour en revenir à l'inférence neuronale stéréo, comme précisé dans la partie traitant de la monovision, il faut choisir de faire de l'inférence neuronale stéréo ou mono en fonction de la situation, les deux façons de faire ne rentres pas en concurrence, elles se complètent. Ainsi, pour visualiser la forme d'un objet, il vaut mieux faire de l'inférence neuronale stéréo, tandis que pour simplement estimer sa distance par rapport au dispositif, il vaut mieux inférer uniquement sur la caméra centrale et se fier à la carte de disparité.

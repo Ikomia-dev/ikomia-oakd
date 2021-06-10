@@ -1,0 +1,106 @@
+from utils.compute import get_vector_intersection
+from utils.visualize import HumanPoseVisualizer
+from utils.OakRunner import OakRunner
+from utils.pose import getKeypoints
+from utils.draw import displayFPS
+from pathlib import Path
+import depthai as dai
+import numpy as np
+import cv2
+
+
+
+fps_limit = 3
+frame_width, frame_height = 456, 256
+pairs = [[1, 2], [1, 5], [2, 3], [3, 4], [5, 6], [6, 7], [1, 8], [8, 9], [9, 10], [1, 11], [11, 12], [12, 13],
+              [1, 0], [0, 14], [14, 16], [0, 15], [15, 17]]
+colors = [[255, 100, 0], [255, 100, 0], [255, 255, 0], [255, 100, 0], [255, 255, 0], [255, 100, 0], [0, 255, 0],
+          [100, 200, 255], [255, 0, 255], [0, 255, 0], [100, 200, 255], [255, 0, 255], [255, 0, 0], [0, 0, 255],
+          [0, 200, 200], [0, 0, 255], [0, 200, 200], [0, 0, 0]]
+threshold = 0.3
+nb_points = 18
+
+
+
+def getProjectionMatrix(intrinsic_matrix, extrinsic_matrix):
+    return intrinsic_matrix.dot(extrinsic_matrix)
+
+
+def getSpatialVector(x, y, projection_matrix):
+    point = np.array([x,y,1]).reshape(3, 1).astype(np.float32)
+    vector = np.linalg.pinv(projection_matrix).dot(point)
+    return [vector[0][0], vector[1][0], vector[2][0]]
+
+
+def init(runner, device):
+    calibration = device.readCalibration()
+    left_intrinsics = np.array(calibration.getCameraIntrinsics(dai.CameraBoardSocket.LEFT, 1280, 720))
+    right_intrinsics = np.array(calibration.getCameraIntrinsics(dai.CameraBoardSocket.RIGHT, 1280, 720))
+    extrinsics = np.array(calibration.getCameraExtrinsics(dai.CameraBoardSocket.LEFT, dai.CameraBoardSocket.RIGHT))[:3,:]
+    runner.custom_arguments["P_left"] = getProjectionMatrix(left_intrinsics, extrinsics)
+    runner.custom_arguments["P_right"] = getProjectionMatrix(right_intrinsics, extrinsics)
+
+    runner.custom_arguments["visualizer"] = HumanPoseVisualizer(300, 300, [runner.left_camera_location, runner.right_camera_location], size=10, colors=colors, pairs=pairs)
+    runner.custom_arguments["visualizer"].start()
+
+
+def process(runner):
+    spatial_vectors = dict()
+    for side in ["left", "right"]:
+        frame = runner.output_queues[side+"_cam"].get().getCvFrame()
+        nn_current_output = runner.output_queues["nn_"+side].get()
+        
+        heatmaps = np.array(nn_current_output.getLayerFp16('Mconv7_stage2_L2')).reshape((1, 19, 32, 57)).astype('float32')
+        pafs = np.array(nn_current_output.getLayerFp16('Mconv7_stage2_L1')).reshape((1, 38, 32, 57)).astype('float32')
+        outputs = np.concatenate((heatmaps, pafs), axis=1)
+
+        spatial_vectors[side] = []
+        landmarks = []
+        for i in range(nb_points):
+            probMap = outputs[0, i, :, :]
+            probMap = cv2.resize(probMap, (frame_width, frame_height))
+            keypoints = getKeypoints(probMap, threshold)
+            if(len(keypoints) > 0 and len(keypoints[0]) > 1):
+                spatial_vectors[side].append(np.array(getSpatialVector(keypoints[0][0], keypoints[0][1], runner.custom_arguments["P_"+side])))
+                landmarks.append([keypoints[0][0], keypoints[0][1]])
+                cv2.circle(frame, (keypoints[0][0], keypoints[0][1]), 5, (colors[i][2], colors[i][1], colors[i][0]), -1, cv2.LINE_AA) # draw keypoint
+            else:
+                spatial_vectors[side].append(keypoints) # insert empty array if the keypoint is not detected with enough confidence
+                landmarks.append(keypoints)
+
+        for pair in pairs:
+            if(np.alltrue([len(landmarks[i])==2 for i in pair])):
+                color = [0, 0, 0]
+                for i in range(3):
+                    color[i] += colors[pair[0]][i]/2
+                    color[i] += colors[pair[1]][i]/2
+                cv2.line(frame, (landmarks[pair[0]][0], landmarks[pair[0]][1]), (landmarks[pair[1]][0], landmarks[pair[1]][1]), (color[2], color[1], color[0]), 3, cv2.LINE_AA)
+
+        displayFPS(frame, runner.getFPS())
+        cv2.imshow(side, frame)
+
+    # Determined depth to accuratly locate landmarks in space
+    landmark_spatial_locations = []
+    for i in range(nb_points):
+        landmark_spatial_locations.append(np.array(get_vector_intersection(spatial_vectors["left"][i], runner.left_camera_location, spatial_vectors["right"][i], runner.right_camera_location)))
+    runner.custom_arguments["visualizer"].setLandmarks(landmark_spatial_locations)
+
+
+
+runner = OakRunner() 
+
+for side in ["left", "right"]:
+    if(side == "left"):
+        runner.setLeftCamera(frame_width, frame_height)
+        runner.getLeftCamera().setFps(fps_limit)
+        manip = runner.getLeftCameraManip()
+    else:
+        runner.setRightCamera(frame_width, frame_height)
+        runner.getRightCamera().setFps(fps_limit)
+        manip = runner.getRightCameraManip()
+
+    manip.initialConfig.setFrameType(dai.RawImgFrame.Type.BGR888p) # Switch to BGR (but still grayscaled)
+    runner.addNeuralNetworkModel(stream_name="nn_"+side, path=str(Path(__file__).parent) + "/../../_models/pose_estimation.blob", handle_mono_depth=False)
+    manip.out.link(runner.neural_networks["nn_"+side].input) # link transformed video stream to neural network entry
+
+runner.run(process=process, init=init)
