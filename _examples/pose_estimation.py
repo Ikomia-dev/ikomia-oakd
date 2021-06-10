@@ -23,6 +23,14 @@ nb_points = 18
 
 
 def init(runner, device):
+    calibration = device.readCalibration()
+    left_intrinsics = np.array(calibration.getCameraIntrinsics(dai.CameraBoardSocket.LEFT, 1280, 720))
+    right_intrinsics = np.array(calibration.getCameraIntrinsics(dai.CameraBoardSocket.RIGHT, 1280, 720))
+    runner.custom_arguments["focal_length_left"] = left_intrinsics[0,0]
+    runner.custom_arguments["focal_length_right"] = right_intrinsics[0,0]
+    runner.custom_arguments["size_left"] = left_intrinsics[0,2]
+    runner.custom_arguments["size_right"] = right_intrinsics[0,2]
+
     runner.custom_arguments["visualizer"] = HumanPoseVisualizer(300, 300, [runner.left_camera_location, runner.right_camera_location], colors=colors, pairs=pairs)
     runner.custom_arguments["visualizer"].start()
 
@@ -44,7 +52,7 @@ def process(runner):
             probMap = cv2.resize(probMap, (frame_width, frame_height))
             keypoints = getKeypoints(probMap, threshold)
             if(len(keypoints) > 0 and len(keypoints[0]) > 1):
-                spatial_vectors[side].append(np.array(get_landmark_3d((keypoints[0][0]/frame_width, keypoints[0][1]/frame_height))))
+                spatial_vectors[side].append(np.array(get_landmark_3d((keypoints[0][0]/frame_width, keypoints[0][1]/frame_height), focal_length=runner.custom_arguments["focal_length_"+side], size=runner.custom_arguments["size_"+side])))
                 landmarks.append([keypoints[0][0], keypoints[0][1]])
                 cv2.circle(frame, (keypoints[0][0], keypoints[0][1]), 5, (colors[i][2], colors[i][1], colors[i][0]), -1, cv2.LINE_AA) # draw keypoint
             else:
