@@ -17,7 +17,7 @@ frame_width, frame_height = 300, 300
 
 
 # Function called before entering inside the process loop, useful to set few arguments
-def init(runner):
+def init(runner, device):
     runner.custom_arguments["required_confidence"] = 0.2
 
 

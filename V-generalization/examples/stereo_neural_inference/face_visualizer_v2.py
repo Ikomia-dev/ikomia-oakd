@@ -19,13 +19,13 @@ visualizeLandmarksCube = True # define visualization mode (cube with centered fa
 
 
 # Function called before entering inside the process loop, useful to set few arguments
-def init(runner):
+def init(runner, device):
     runner.custom_arguments["required_confidence"] = 0.2
 
     colors = [(255,255,255), (255,255,255), (0,255,255), (255,0,255), (255,0,255)]
     pairs = [(0,2), (1,2), (3,4)]
     if(visualizeLandmarksCube):
-        runner.custom_arguments["visualizer"] = LandmarksCubeVisualizer(frame_width, frame_height, [runner.left_camera_location, runner.right_camera_location], colors=colors, pairs=pairs)
+        runner.custom_arguments["visualizer"] = LandmarksCubeVisualizer(window_width=frame_width, window_height=frame_height, cameras_positions=[runner.left_camera_location, runner.right_camera_location], size=1, colors=colors, pairs=pairs)
     else:
         runner.custom_arguments["visualizer"] = LandmarksDepthVisualizer(frame_width*2, frame_height, [runner.left_camera_location, runner.right_camera_location], colors=colors, pairs=pairs)
     runner.custom_arguments["visualizer"].start()

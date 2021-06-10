@@ -30,3 +30,9 @@ Regroupe des fonctions pour écrire/dessiner sur une image.
 Regroupe des classes pour visualiser des données en 3D avec [OpenGL](https://www.opengl.org//)
 - LandmarksCubeVisualizer : Points d'intérêts centrés avec tracé de la zone d'intérêt (pour observer la forme).
 - LandmarksDepthVisualizer : Points d'intérêts placés dans le plan par les intersections des vecteurs entre caméras et points (pour observer la profondeur).
+<br><br>
+
+
+### pose
+
+Fichier de l'[exemple](https://github.com/luxonis/depthai-experiments/tree/master/gen2-human-pose) de Luxonis, il regroupe des fonctions qui permettent de traiter la sortie du modèle [human pose estimation](https://docs.openvinotoolkit.org/latest/omz_models_model_human_pose_estimation_0001.html).

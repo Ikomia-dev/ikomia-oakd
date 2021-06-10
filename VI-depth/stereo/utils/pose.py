@@ -1,5 +1,10 @@
 import cv2
 import numpy as np
+import math
+
+
+# ------------------------
+# BODY POSE ESTIMATION
 
 keypointsMapping = ['Nose', 'Neck', 'R-Sho', 'R-Elb', 'R-Wr', 'L-Sho', 'L-Elb', 'L-Wr', 'R-Hip', 'R-Knee', 'R-Ank',
                     'L-Hip', 'L-Knee', 'L-Ank', 'R-Eye', 'L-Eye', 'R-Ear', 'L-Ear']
@@ -122,8 +127,50 @@ def getPersonwiseKeypoints(valid_pairs, invalid_pairs, keypoints_list):
     return personwiseKeypoints
 
 
-threshold = 0.3
-nPoints = 18
-w = 456
-h = 256
-detected_keypoints = []
+
+# ------------------------
+# HEAD POSTURE DETECTION
+
+object_pts = np.float32([[6.825897, 6.760612, 4.402142],    # Upper left corner of left eyebrow
+                         [1.330353, 7.122144, 6.903745],    # Left eyebrow right corner
+                         [-1.330353, 7.122144, 6.903745],   # Right eyebrow left corner
+                         [-6.825897, 6.760612, 4.402142],   # Upper right corner of right eyebrow
+                         [5.311432, 5.485328, 3.987654],    # Upper left corner of left eye
+                         [1.789930, 5.393625, 4.413414],    # Upper right corner of left eye
+                         [-1.789930, 5.393625, 4.413414],   # Upper left corner of right eye
+                         [-5.311432, 5.485328, 3.987654],   # Upper right corner of right eye
+                         [2.005628, 1.409845, 6.165652],    # Upper left corner of nose
+                         [-2.005628, 1.409845, 6.165652],   # Upper right corner of nose
+                         [2.774015, -2.080775, 5.048531],   # Upper left corner of mouth
+                         [-2.774015, -2.080775, 5.048531],  # Upper right corner of mouth
+                         [0.000000, -3.116408, 6.097667],   # Lower corner of mouth
+                         [0.000000, -7.415691, 4.070434]])  # Chin angle
+
+cam_matrix = np.array([6.5308391993466671e+002, 0.0, 3.1950000000000000e+002, 0.0,
+     6.5308391993466671e+002, 2.3950000000000000e+002, 0.0, 0.0, 1.0]).reshape(3, 3).astype(np.float32)
+
+dist_coeffs = np.array([7.0834633684407095e-002, 6.9140193737175351e-002,
+     0.0, 0.0, -1.3073460323689292e+000]).reshape(5, 1).astype(np.float32)
+
+reprojectsrc = np.float32([[10.0, 10.0, 10.0], [10.0, 10.0, -10.0], [10.0, -10.0, -10.0], [10.0, -10.0, 10.0],
+                           [-10.0, 10.0, 10.0], [-10.0, 10.0, -10.0], [-10.0, -10.0, -10.0], [-10.0, -10.0, 10.0]])
+
+
+def getHeadPose(shape): # Head pose estimation
+    image_pts = np.float32([shape[0], shape[1], shape[2], shape[3], shape[4],
+                            shape[5], shape[6], shape[7], shape[8], shape[9],
+                            shape[10], shape[11], shape[12], shape[13]])
+    _, rotation_vec, translation_vec = cv2.solvePnP(object_pts, image_pts, cam_matrix, dist_coeffs)
+    reprojectdst, _ = cv2.projectPoints(reprojectsrc, rotation_vec, translation_vec, cam_matrix, dist_coeffs)
+    reprojectdst = tuple(map(tuple, reprojectdst.reshape(8, 2))) # Display in 8 rows and 2 columns
+    rotation_mat, _ = cv2.Rodrigues(rotation_vec) # Rodriguez formula (convert the rotation matrix to a rotation vector)
+    pose_mat = cv2.hconcat((rotation_mat, translation_vec)) # Horizontal splicing, vconcat vertical splicing
+    _, _, _, _, _, _, euler_angle = cv2.decomposeProjectionMatrix(pose_mat)
+    
+    pitch, yaw, roll = [math.radians(_) for _ in euler_angle]
+ 
+    pitch = math.degrees(math.asin(math.sin(pitch)))
+    roll = -math.degrees(math.asin(math.sin(roll)))
+    yaw = math.degrees(math.asin(math.sin(yaw)))
+
+    return reprojectdst, euler_angle, pitch, yaw, roll

@@ -210,6 +210,132 @@ class LandmarksVisualizer:
 
 
 
+class LandmarksCubeVisualizer(LandmarksVisualizer):
+    def __init__(self, window_width, window_height, cameras_positions, size=1, colors=[], pairs=[]):
+        super().__init__(window_width, window_height, cameras_positions, size, colors, pairs)
+        scale = 1.05
+        self.__verticies = ((size*scale, -size*scale, -size*scale), (size*scale, size*scale, -size*scale), (-size*scale, size*scale, -size*scale), (-size*scale, -size*scale, -size*scale),
+        (size*scale, -size*scale, size*scale), (size*scale, size*scale, size*scale), (-size*scale, -size*scale, size*scale), (-size*scale, size*scale, size*scale))
+        self.__edges = ((0,1), (0,3), (0,4), (2,1), (2,3), (2,7), (6,3), (6,4), (6,7), (5,1), (5,4), (5,7))
+        self.__roi = ()
+
+        self.cube_width = 3.0
+        self.roi_width = 0.5
+
+        self.cube_color = (0.4, 0.4, 0.4)
+        self.roi_color = (0.6, 0.6, 0.15)
+
+
+    def __drawCube(self):
+        glLineWidth(self.cube_width)
+        glBegin(GL_LINES)
+        glColor3f(self.cube_color[0], self.cube_color[1], self.cube_color[2])
+        for edge in self.__edges:
+            for vertex in edge:
+                glVertex3fv(self.__verticies[vertex])
+        glEnd()
+
+
+    def setLandmarks(self, landmarks):
+        if(len(landmarks) > 0):
+            xmin, xmax, ymin, ymax, zmin, zmax = getMinMax(landmarks)
+            fit = [(self._size > (landmarks[i][0]-(xmin-self._cameras_positions[0][0])+(-self._size-(xmin-(xmin-self._cameras_positions[0][0])))/2+(self._size-(xmax-(xmin-self._cameras_positions[0][0])))/2) > -self._size) and (self._size > landmarks[i][1] > -self._size) and (self._size > landmarks[i][2] > -self._size) and landmarks[i][0] > 0 for i in range(len(landmarks))]
+            if(np.alltrue(fit)):
+                self._landmarks = []
+                x_translation = -(xmin-self._cameras_positions[0][0])+(-self._size-(xmin-(xmin-self._cameras_positions[0][0])))/2+(self._size-(xmax-(xmin-self._cameras_positions[0][0])))/2
+                for i in range(len(landmarks)):
+                    self._landmarks.append([landmarks[i][0]+x_translation, landmarks[i][1], landmarks[i][2]])
+                self._xmin, self._xmax = xmin+x_translation, xmax+x_translation
+                self._ymin, self._ymax = ymin, ymax
+                self._zmin, self._zmax = zmin, zmax
+
+
+    def __drawROI(self):
+        if(len(self._landmarks) > 0):
+            margin = self._size/20
+            self.__roi = ((self._xmax+margin, self._ymin-margin, self._zmin-margin), (self._xmax+margin, self._ymax+margin, self._zmin-margin), (self._xmin-margin, self._ymax+margin, self._zmin-margin), (self._xmin-margin, self._ymin-margin, self._zmin-margin),
+            (self._xmax+margin, self._ymin-margin, self._zmax+margin), (self._xmax+margin, self._ymax+margin, self._zmax+margin), (self._xmin-margin, self._ymin-margin, self._zmax+margin), (self._xmin-margin, self._ymax+margin, self._zmax+margin))
+            
+            glLineWidth(self.roi_width)
+            glBegin(GL_LINES)
+            glColor3f(self.roi_color[0], self.roi_color[1], self.roi_color[2])
+            for edge in self.__edges:
+                for vertex in edge:
+                    glVertex3fv(self.__roi[vertex])
+            glEnd()
+
+
+    def _run(self):
+        pygame.init()
+        display = (self._window_width,self._window_height)
+        pygame.display.set_mode(display, DOUBLEBUF|OPENGL)
+
+        gluPerspective(45, (display[0]/display[1]), 0.1, 50.0)
+
+        glTranslatef(0.0, 0.0, -self._size*4)
+        glRotatef(270, 1, 0, 0)
+        glRotatef(270, 0, 0, 1)
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    break
+                self._mouseMove(event, allowRotationY=False)
+
+            glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
+            self.__drawCube()
+            self._drawAxis()
+            self._drawLandmarks()
+            self._drawPairs()
+            self.__drawROI()
+            pygame.display.flip()
+            pygame.time.wait(10)
+
+
+
+class LandmarksDepthVisualizer(LandmarksVisualizer):
+    def __init__(self, window_width, window_height, cameras_positions, colors=[], pairs=[]):
+        super().__init__(window_width, window_height, cameras_positions, colors, pairs)
+
+
+    def setLandmarks(self, landmarks):
+        if(len(landmarks)>0):
+            xmin, xmax, ymin, ymax, zmin, zmax = getMinMax(landmarks)
+            if(xmin>0):
+                self._landmarks = landmarks
+                self._xmin, self._xmax = xmin, xmax
+                self._ymin, self._ymax = ymin, ymax
+                self._zmin, self._zmax = zmin, zmax
+
+
+    def _run(self):
+        pygame.init()
+        display = (self._window_width,self._window_height)
+        pygame.display.set_mode(display, DOUBLEBUF|OPENGL)
+
+        gluPerspective(45, (display[0]/display[1]), 0.1, 50.0)
+        glTranslatef(-0.25 ,0.0, -1)
+        glRotatef(11, 0, 1, 0)
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    break
+                self._mouseMove(event, allowRotationX=False)
+
+            glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
+            self._drawAxis()
+            self._drawCameras()
+            self._drawLandmarks()
+            self._drawPairs()
+            self._drawVectors()
+            pygame.display.flip()
+            pygame.time.wait(10)
+
+
+
 class HumanPoseVisualizer(LandmarksVisualizer):
     def __init__(self, window_width, window_height, cameras_positions, size=1, colors=[], pairs=[]):
         super().__init__(window_width, window_height, cameras_positions, size, colors, pairs)

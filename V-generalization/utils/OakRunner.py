@@ -241,7 +241,7 @@ class OakRunner:
                 self.output_queues[self.__spatial_location_calculator_stream_name] = device.getOutputQueue(name=self.__spatial_location_calculator_stream_name, maxSize=self.__output_queue_arguments[self.__spatial_location_calculator_stream_name]["maxSize"], blocking=self.__output_queue_arguments[self.__spatial_location_calculator_stream_name]["blocking"])
 
             if(init is not None):
-                init(self) # Call the init function
+                init(self, device) # Call the init function
 
             self.__starttime = time.time()
             # Enter into processing loop

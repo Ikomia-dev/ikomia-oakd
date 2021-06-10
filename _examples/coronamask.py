@@ -23,7 +23,7 @@ middle_cam.setInterleaved(False)
 middle_cam.setFps(20)
 
 # Configure neural network
-runner.addMobileNetDetectionModel(stream_name="nn", path=str(Path(__file__).parent) + "/../models/coronamask.blob", handle_mono_depth=False)
+runner.addMobileNetDetectionModel(stream_name="nn", path=str(Path(__file__).parent) + "/../_models/coronamask.blob", handle_mono_depth=False)
 middle_cam.preview.link(runner.neural_networks["nn"].input)
 runner.labels = ["background", "no mask", "mask", "no mask"]
 

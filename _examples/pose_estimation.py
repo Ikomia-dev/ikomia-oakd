@@ -22,7 +22,7 @@ nb_points = 18
 
 
 
-def init(runner):
+def init(runner, device):
     runner.custom_arguments["visualizer"] = HumanPoseVisualizer(300, 300, [runner.left_camera_location, runner.right_camera_location], colors=colors, pairs=pairs)
     runner.custom_arguments["visualizer"].start()
 

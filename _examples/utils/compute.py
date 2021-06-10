@@ -17,6 +17,12 @@ def to_planar(arr: np.ndarray, shape: tuple) -> list:
     return [val for channel in cv2.resize(arr, shape).transpose(2, 0, 1) for y_col in channel for val in y_col]
 
 
+def frame_norm(frame, rect):
+    norm_vals = np.full(len(rect), frame.shape[0])
+    norm_vals[::2] = frame.shape[1]
+    return (np.clip(np.array(rect), 0, 1) * norm_vals).astype(int)
+
+
 def get_landmark_3d(landmark, focal_length=842, size=640):
     landmark_norm = 0.5 - np.array(landmark)
     landmark_image_coord = landmark_norm * size
