@@ -11,18 +11,22 @@ Ces calculs sont assez complexes, dans le point [IV](https://github.com/Ikomia-d
 ```py
 # Récupère la direction du vecteur allant de la caméra au point
 def get_landmark_3d(landmark, focal_length=842, size=640):
+    # Centrage et mise à l'échelle des coordonnées (qui, à l'origine, sont entre 0 et 1)
     landmark_norm = 0.5 - np.array(landmark)
     landmark_image_coord = landmark_norm * size
 
+    # Calcul de coordonnées polaires pour récupérer la direction (trigonométrie)
     landmark_spherical_coord = [math.atan2(landmark_image_coord[0], focal_length),
                                 -math.atan2(landmark_image_coord[1], focal_length) + math.pi / 2]
 
+    # Traduction en coordonnées cartésiennes
     landmarks_3D = [
         math.sin(landmark_spherical_coord[1]) * math.cos(landmark_spherical_coord[0]),
         math.sin(landmark_spherical_coord[1]) * math.sin(landmark_spherical_coord[0]),
         math.cos(landmark_spherical_coord[1])
     ]
 
+    # On obtient ainsi le vecteur directionnel
     return landmarks_3D
 
 
@@ -50,9 +54,9 @@ def get_vector_intersection(left_vector, left_camera_position, right_vector, rig
     return center
 ```
 
-Ceci semble fonctionnel, j'ai testé en réalisant un programme "pose_estimation_stereo.py" qui détecte la forme d'un corps humain, puis, la modélise en 3D. Cependant, je ne comprends pas les calculs, je me suis donc penché sur une autre façon de faire en m'aidant de cet [article](https://learnopencv.com/introduction-to-epipolar-geometry-and-stereo-vision/).
+Ceci semble fonctionnel, j'ai testé en réalisant un programme "pose_estimation_stereo.py" qui détecte la forme d'un corps humain, puis, la modélise en 3D. Cependant, les calculs ne prennent pas compte de tous les paramètres (notamment les extrinsèques), je me suis donc penché sur une autre façon de faire en m'aidant de cet [article](https://learnopencv.com/introduction-to-epipolar-geometry-and-stereo-vision/).
 
-L'idée est de faire l'opération inverse d'une capture d'image, au lieu de projeter la scène 3D en 2D (dans le plan image), on va reprendre les calculs pour passer de la projection 2D au coordonnées 3D. Pour en savoir plus sur ce processus, voici un [article](https://learnopencv.com/geometry-of-image-formation/) assez complet.
+L'idée est de faire l'opération inverse d'une capture d'image, au lieu de projeter la scène 3D en 2D (dans le plan image), on va reprendre les calculs pour passer de la projection 2D aux coordonnées 3D. Pour en savoir plus sur ce processus, voici un [article](https://learnopencv.com/geometry-of-image-formation/) assez complet.
 
 Pour ce faire, il faut récupérer les caractéristiques intrinsèques et extrinsèques des caméras et heureusement pour nous, ces informations sont stockées dans l'OAK-D, il suffit d'instancier la classe [CalibrationHandler](https://docs.luxonis.com/projects/api/en/latest/references/python/#depthai.CalibrationHandler), pour illustrer mes propos, voici quelques extraits du programme "calibration_info.py".
 
